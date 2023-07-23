@@ -1,95 +1,70 @@
+mod input;
+
+use std::time::{Duration, Instant};
 use image::{DynamicImage, RgbaImage};
 use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
-use winit::event::{Event, VirtualKeyCode, WindowEvent};
+use winit::event::{DeviceEvent, Event, VirtualKeyCode, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};
+use crate::input::Input;
 
 const WIDTH: u32 = 640;
 const HEIGHT: u32 = 480;
-const BOX_SIZE: i32 = 64;
 
 struct World {
-    square: Square,
+    image: Gengar,
+    input: Input,
 }
 
 impl World {
     fn new() -> Self {
         Self {
-            square: Square { pos_x: 24, pos_y: 16, velocity_x: 1, velocity_y: 1 }
+            image: Gengar::new("./assets/gengar.png", 0, 0),
+            input: Input::new(),
         }
     }
 
     fn update(&mut self) {
-        self.square.update();
+        self.image.update(&self.input);
     }
 
     fn draw(&self, frame: &mut [u8]) {
-        self.square.draw(frame);
+        self.image.draw(frame);
     }
 }
 
-struct Square {
+struct Gengar {
+    pixels: Box<RgbaImage>,
     pos_x: i32,
     pos_y: i32,
-    velocity_x: i32,
-    velocity_y: i32,
 }
 
-impl Square {
-    fn update(&mut self) {
-        if self.pos_x <= 0 || self.pos_x + BOX_SIZE > WIDTH as i32 {
-            self.velocity_x *= -1;
-        }
-        if self.pos_y <= 0 || self.pos_y + BOX_SIZE > HEIGHT as i32 {
-            self.velocity_y *= -1;
-        }
+const GENGAR_SPEED: i32 = 3;
 
-        self.pos_x += self.velocity_x;
-        self.pos_y += self.velocity_y;
+impl Gengar {
+    fn update(&mut self, input: &Input) {
+        self.pos_x += input.x() * GENGAR_SPEED;
+        self.pos_y += input.y() * GENGAR_SPEED;
+    }
+}
+
+impl Gengar {
+    fn new(path: &str, pos_x: i32, pos_y: i32) -> Self {
+        let image = image::open(path).unwrap();
+        let pixels = Box::new(image.as_rgba8().unwrap().to_owned());
+        Self { pixels, pos_x, pos_y }
     }
 
     fn draw(&self, frame: &mut [u8]) {
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            let x = (i % WIDTH as usize) as i32;
-            let y = (i / WIDTH as usize) as i32;
-
-            let inside_the_box = x >= self.pos_x
-                && x < self.pos_x + BOX_SIZE
-                && y >= self.pos_y
-                && y < self.pos_y + BOX_SIZE;
-
-            let rgba = if inside_the_box {
-                [0x5e, 0x48, 0xe8, 0xff]
-            } else {
-                [0x48, 0xb2, 0xe8, 0xff]
-            };
-
-            pixel.copy_from_slice(&rgba);
-        }
-    }
-}
-
-struct Image {
-    pixels: Box<RgbaImage>,
-}
-
-impl Image {
-    fn new(path: &str) -> Self {
-        let image = image::open(path).unwrap();
-        let pixels = Box::new(image.as_rgba8().unwrap().to_owned());
-        Self { pixels }
-    }
-
-    fn draw(&self, frame: &mut [u8], dest_x: usize, dest_y: usize) {
         let image_width = self.pixels.width() as usize;
         let image_height = self.pixels.height() as usize;
 
         for (i, pixel) in self.pixels.chunks_exact(4).enumerate() {
-            let src_x = i % image_width;
-            let src_y = i / image_height;
+            let src_x = (i % image_width) as i32;
+            let src_y = (i / image_height) as i32;
 
-            let frame_offset = ((dest_y + src_y) * (WIDTH as usize) + (dest_x + src_x)) * 4; // TODO dynamic width
+            let frame_offset = (((self.pos_y + src_y) * WIDTH as i32 + (self.pos_x + src_x)) * 4) as usize;
 
             if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
                 dest_pixel.copy_from_slice(pixel);
@@ -111,6 +86,11 @@ fn main() -> Result<(), Error> {
             .unwrap()
     };
 
+    // FPS things
+    let mut last_frame_time = Instant::now();
+    let mut frames = 0;
+    let mut fps_timer = Instant::now();
+
     let mut pixels = {
         let size = window.inner_size();
         let surface_texture = SurfaceTexture::new(size.width, size.height, &window);
@@ -118,30 +98,39 @@ fn main() -> Result<(), Error> {
     };
     let mut world = World::new();
 
-    let image = Image::new("./assets/gengar.png");
-
     event_loop.run(move |event, _, control_flow| {
+        // Update the last_frame_time to the current time for the next frame
+        last_frame_time = Instant::now();
+
         match event {
-            Event::WindowEvent { event, .. } => {
+            Event::WindowEvent { event, .. } if !world.input.process_events(&event) => {
                 match event {
                     WindowEvent::Resized(size) => {
                         pixels.resize_surface(size.width, size.height).unwrap();
                     }
-                    WindowEvent::CloseRequested => { *control_flow = ControlFlow::Exit }
+                    WindowEvent::CloseRequested => { *control_flow = ControlFlow::Exit },
                     _ => {}
                 }
             }
             Event::RedrawRequested(_) => {
                 world.update();
-                
-                // world.draw(pixels.frame_mut());
-                image.draw(pixels.frame_mut(), 60, 60);
+                world.draw(pixels.frame_mut());
                 pixels.render().unwrap();
             }
             Event::MainEventsCleared => {
                 window.request_redraw();
             }
             _ => {}
+        }
+
+        frames += 1;
+        // Calculate FPS every second
+        let elapsed_since_fps_update = fps_timer.elapsed();
+        if elapsed_since_fps_update.as_secs() >= 1 {
+            let fps = frames as f64 / elapsed_since_fps_update.as_secs() as f64;
+            println!("FPS: {:.2}", fps);
+            frames = 0;
+            fps_timer = Instant::now();
         }
     });
 }
