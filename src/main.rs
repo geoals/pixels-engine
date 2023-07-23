@@ -89,22 +89,13 @@ impl Image {
             let src_x = i % image_width;
             let src_y = i / image_height;
 
-            let frame_offset = (dest_y + src_y) * (WIDTH as usize) + (dest_x + src_x); // TODO dynamic width
-            let pixel_offset = src_y * image_width + src_x;
+            let frame_offset = ((dest_y + src_y) * (WIDTH as usize) + (dest_x + src_x)) * 4; // TODO dynamic width
 
             if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
-                if let Some(src_pixel) = self.pixels.get(pixel_offset * 4..(pixel_offset + 1) * 4) {
-                    dest_pixel.copy_from_slice(src_pixel);
-                }
+                dest_pixel.copy_from_slice(pixel);
             }
-            // if pixel_offset < self.pixels.len() && frame_offset + 3 < frame.len() {
-            //     if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
-            //         dest_pixel.copy_from_slice(&pixel[0..4]);
-            //     }
-            // }
         }
     }
-    // fn pixels(&self) -> &RgbaImage { &self.pixels }
 }
 
 fn main() -> Result<(), Error> {
@@ -142,8 +133,9 @@ fn main() -> Result<(), Error> {
             }
             Event::RedrawRequested(_) => {
                 world.update();
+                
                 // world.draw(pixels.frame_mut());
-                image.draw(pixels.frame_mut(), 0, 0);
+                image.draw(pixels.frame_mut(), 60, 60);
                 pixels.render().unwrap();
             }
             Event::MainEventsCleared => {
