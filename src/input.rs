@@ -17,22 +17,29 @@ impl Input {
         }
     }
 
+    pub fn is_movement_keys_pressed(&self) -> bool {
+        self.is_down_pressed
+            || self.is_up_pressed
+            || self.is_right_pressed
+            || self.is_left_pressed
+    }
+
+    /// Horizontal movement unit-vector based on pressed keys
     pub fn y(&self) -> i32 {
         if self.is_up_pressed && !self.is_down_pressed {
-            return -1
-        }
-        else if self.is_down_pressed && !self.is_up_pressed {
-            return 1
+            return -1;
+        } else if self.is_down_pressed && !self.is_up_pressed {
+            return 1;
         }
         0
     }
 
+    /// Vertical movement unit-vector based on pressed keys
     pub fn x(&self) -> i32 {
         if self.is_left_pressed && !self.is_right_pressed {
-            return -1
-        }
-        else if self.is_right_pressed && !self.is_left_pressed {
-            return 1
+            return -1;
+        } else if self.is_right_pressed && !self.is_left_pressed {
+            return 1;
         }
         0
     }
