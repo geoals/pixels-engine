@@ -5,8 +5,8 @@ use pixels::{Error, Pixels, SurfaceTexture};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
-use winit::window::WindowBuilder;
-use crate::draw::line;
+use winit::window::{Window, WindowBuilder};
+use crate::draw::draw_grid;
 
 use crate::input::Input;
 
@@ -20,15 +20,23 @@ pub const GRID_SIZE: u32 = 64;
 struct World {
     entities: Vec<Box<dyn Render>>,
     input: Input,
+    pixels: Pixels,
 }
 
 impl World {
-    fn new() -> Self {
+    fn new(window: &Window) -> Self {
+        let pixels = {
+            let size = window.inner_size();
+            let surface_texture = SurfaceTexture::new(size.width, size.height, &window);
+            Pixels::new(size.width, size.height, surface_texture).unwrap()
+        };
+
         Self {
             entities: vec![
                 Box::new(Gengar::new("./assets/gengar-64.png", 0, 0)),
             ],
             input: Input::new(),
+            pixels
         }
     }
 
@@ -38,9 +46,23 @@ impl World {
         }
     }
 
-    fn draw(&self, frame: &mut [u8]) {
+    fn draw(&mut self) {
+        draw_grid(self.pixels().frame_mut()); // if debug
         for entity in &self.entities {
-            entity.draw(frame);
+            entity.draw(self.pixels.frame_mut());
+        }
+        self.pixels.render().unwrap();
+    }
+
+    fn pixels(&mut self) -> &mut Pixels {
+        &mut self.pixels
+    }
+
+    /// Clear the screen
+    fn clear(&mut self) {
+        for (i, byte) in self.pixels.frame_mut().iter_mut().enumerate() {
+            *byte = 0;
+            // *byte = if i % 4 == 3 { 255 } else { 0 };
         }
     }
 }
@@ -159,6 +181,10 @@ trait Render {
         let image_height = self.pixels().height() as usize;
 
         for (i, pixel) in self.pixels().chunks_exact(4).enumerate() {
+            // Don't draw fully transparent pixels
+            if pixel[3] == 0 {
+                continue;
+            }
             let src_x = (i % image_width) as i32;
             let src_y = (i / image_height) as i32;
 
@@ -181,23 +207,6 @@ trait Render {
     fn pos_y(&self) -> i32;
 }
 
-/// Clear the screen
-fn clear(screen: &mut [u8]) {
-    for (i, byte) in screen.iter_mut().enumerate() {
-        *byte = 0;
-        // *byte = if i % 4 == 3 { 255 } else { 0 };
-    }
-}
-
-fn draw_grid(frame: &mut [u8]) {
-    for x in 1..(WIDTH / GRID_SIZE) {
-        line((x * GRID_SIZE, 0), (x * GRID_SIZE, HEIGHT), frame);
-    }
-    for y in 0..(HEIGHT / GRID_SIZE) {
-        line((0, y * GRID_SIZE), (WIDTH, y * GRID_SIZE), frame);
-    }
-}
-
 fn main() -> Result<(), Error> {
     env_logger::init();
     let event_loop = EventLoop::new();
@@ -216,12 +225,7 @@ fn main() -> Result<(), Error> {
     let mut frames = 0;
     let mut fps_timer = Instant::now();
 
-    let mut pixels = {
-        let size = window.inner_size();
-        let surface_texture = SurfaceTexture::new(size.width, size.height, &window);
-        Pixels::new(size.width, size.height, surface_texture)?
-    };
-    let mut world = World::new();
+    let mut world = World::new(&window);
 
     event_loop.run(move |event, _, control_flow| {
         // Update the last_frame_time to the current time for the next frame
@@ -231,18 +235,16 @@ fn main() -> Result<(), Error> {
             Event::WindowEvent { event, .. } if !world.input.process_events(&event) => {
                 match event {
                     WindowEvent::Resized(size) => {
-                        pixels.resize_surface(size.width, size.height).unwrap();
+                        world.pixels().resize_surface(size.width, size.height).unwrap();
                     }
                     WindowEvent::CloseRequested => { *control_flow = ControlFlow::Exit }
                     _ => {}
                 }
             }
             Event::RedrawRequested(_) => {
-                clear(pixels.frame_mut());
-                draw_grid(pixels.frame_mut()); // if debug
+                world.clear();
                 world.update();
-                world.draw(pixels.frame_mut());
-                pixels.render().unwrap();
+                world.draw();
             }
             Event::MainEventsCleared => {
                 window.request_redraw();

@@ -34,3 +34,12 @@ pub fn line(from: (u32, u32), to: (u32, u32), frame: &mut [u8]) {
         }
     }
 }
+
+pub fn draw_grid(frame: &mut [u8]) {
+    for x in 1..(WIDTH / GRID_SIZE) {
+        line((x * GRID_SIZE, 0), (x * GRID_SIZE, HEIGHT), frame);
+    }
+    for y in 0..(HEIGHT / GRID_SIZE) {
+        line((0, y * GRID_SIZE), (WIDTH, y * GRID_SIZE), frame);
+    }
+}
