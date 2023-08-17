@@ -6,12 +6,14 @@ use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};
+use player::Gengar;
 use crate::draw::draw_grid;
 
 use crate::input::Input;
 
 mod input;
 mod draw;
+mod player;
 
 pub const WIDTH: u32 = 640;
 pub const HEIGHT: u32 = 512;
@@ -34,6 +36,7 @@ impl World {
         Self {
             entities: vec![
                 Box::new(Gengar::new("./assets/gengar-64.png", 0, 0)),
+                Box::new(Obstruction::new(2, 2, GRID_SIZE as i32)),
             ],
             input: Input::new(),
             pixels
@@ -67,144 +70,81 @@ impl World {
     }
 }
 
-struct Gengar {
-    pixels: Box<RgbaImage>,
-    /// Utility value used to determine correct movement when two movement keys are pressed at once
-    first_direction: Direction,
-    current_direction: Direction,
-    pos_x: i32,
-    pos_y: i32,
-}
+trait Render {
+    fn draw(&self, frame: &mut [u8]) {
+        if let Some(pixels) = self.pixels() {
+            let image_width = pixels.width() as usize;
+            let image_height = pixels.height() as usize;
 
-impl Gengar {
-    fn new(path: &str, pos_x: i32, pos_y: i32) -> Self {
-        let image = image::open(path).unwrap();
-        let pixels = Box::new(image.as_rgba8().unwrap().to_owned());
-        Self { pixels, pos_x, pos_y, first_direction: Direction::None, current_direction: Direction::None }
-    }
-
-    fn is_on_grid(&self) -> bool {
-        self.is_on_horizontal_grid() && self.is_on_vertical_grid()
-    }
-
-    fn is_on_vertical_grid(&self) -> bool {
-        self.pos_x % GRID_SIZE as i32 == 0
-    }
-
-    fn is_on_horizontal_grid(&self) -> bool {
-        self.pos_y % GRID_SIZE as i32 == 0
-    }
-
-    fn set_first_direction(&mut self, input: &Input) {
-        if self.first_direction == Direction::None {
-            if input.x() == 0 {
-                if input.y() == -1 {
-                    self.first_direction = Direction::Up;
+            for (i, pixel) in pixels.chunks_exact(4).enumerate() {
+                // Don't draw fully transparent pixels
+                if pixel[3] == 0 {
+                    continue;
                 }
-                if input.y() == 1 {
-                    self.first_direction = Direction::Down;
+                let src_x = (i % image_width) as i32;
+                let src_y = (i / image_height) as i32;
+
+                let frame_offset = (((self.pos_y() + src_y) * WIDTH as i32 + (self.pos_x() + src_x)) * 4) as usize;
+
+                if frame_offset > frame.len() || self.pos_x() + src_x >= WIDTH as i32 || self.pos_x() + src_x < 0 {
+                    continue;
                 }
-            }
-            if input.y() == 0 {
-                if input.x() == -1 {
-                    self.first_direction = Direction::Left;
-                }
-                if input.x() == 1 {
-                    self.first_direction = Direction::Right;
+
+                if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
+                    dest_pixel.copy_from_slice(pixel);
                 }
             }
         }
     }
-}
 
-/// Pixels per frame TODO time based instead of frame based
-const GENGAR_SPEED: i32 = 4;
-
-#[derive(PartialEq, Debug)]
-enum Direction {
-    Left,
-    Right,
-    Up,
-    Down,
-    None,
-}
-
-
-
-impl Render for Gengar {
+    // should all renderable things have update method?
     fn update(&mut self, input: &Input) {
-        self.set_first_direction(input);
 
-        if input.y() == 1 && self.is_on_vertical_grid() {
-            self.current_direction = Direction::Down;
-        }
-        if input.y() == -1 && self.is_on_vertical_grid() {
-            self.current_direction = Direction::Up;
-        }
-        if input.x() == 1 && !(self.first_direction == Direction::Right && input.y() != 0) && self.is_on_horizontal_grid() {
-            self.current_direction = Direction::Right;
-        }
-        if input.x() == -1 && !(self.first_direction == Direction::Left && input.y() != 0) && self.is_on_horizontal_grid() {
-            self.current_direction = Direction::Left;
-        }
-
-        if !input.is_movement_keys_pressed() && self.is_on_grid() {
-            self.current_direction = Direction::None;
-            self.first_direction = Direction::None;
-        }
-
-        match self.current_direction {
-            Direction::Left => self.pos_x -= GENGAR_SPEED,
-            Direction::Right => self.pos_x += GENGAR_SPEED,
-            Direction::Up => self.pos_y -= GENGAR_SPEED,
-            Direction::Down => self.pos_y += GENGAR_SPEED,
-            Direction::None => (),
-        }
     }
 
-    fn pixels(&self) -> &RgbaImage {
-        self.pixels.as_ref()
+    fn pixels(&self) -> Option<&RgbaImage> {
+        None
+    }
+    fn pos_x(&self) -> i32;
+    fn pos_y(&self) -> i32;
+}
+
+struct Obstruction {
+    grid_x: u32,
+    grid_y: u32,
+    size: i32,
+}
+
+impl Obstruction {
+    fn new(grid_x: u32, grid_y: u32, size: i32) -> Self {
+        Self { grid_x, grid_y, size }
+    }
+}
+
+impl Render for Obstruction {
+    fn draw(&self, frame: &mut [u8]) {
+        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            let x = (i % WIDTH as usize) as i32;
+            let y = (i / WIDTH as usize) as i32;
+
+            let inside_the_box = x >= self.pos_x()
+                && x < self.pos_x() + self.size
+                && y >= self.pos_y()
+                && y < self.pos_y() + self.size;
+
+            if inside_the_box {
+                pixel.copy_from_slice(&[255, 0, 0, 255])
+            }
+        }
     }
 
     fn pos_x(&self) -> i32 {
-        self.pos_x
+        (self.grid_x * GRID_SIZE) as i32
     }
 
     fn pos_y(&self) -> i32 {
-        self.pos_y
+        (self.grid_y * GRID_SIZE) as i32
     }
-}
-
-trait Render {
-    fn draw(&self, frame: &mut [u8]) {
-        let image_width = self.pixels().width() as usize;
-        let image_height = self.pixels().height() as usize;
-
-        for (i, pixel) in self.pixels().chunks_exact(4).enumerate() {
-            // Don't draw fully transparent pixels
-            if pixel[3] == 0 {
-                continue;
-            }
-            let src_x = (i % image_width) as i32;
-            let src_y = (i / image_height) as i32;
-
-            let frame_offset = (((self.pos_y() + src_y) * WIDTH as i32 + (self.pos_x() + src_x)) * 4) as usize;
-
-            if frame_offset > frame.len() || self.pos_x() + src_x >= WIDTH as i32 || self.pos_x() + src_x < 0 {
-                continue;
-            }
-
-            if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
-                dest_pixel.copy_from_slice(pixel);
-            }
-        }
-    }
-
-    fn update(&mut self, input: &Input);
-    // should all renderable things have update method?
-    fn pixels(&self) -> &RgbaImage;
-    fn pos_x(&self) -> i32;
-    fn pos_y(&self) -> i32;
 }
 
 fn main() -> Result<(), Error> {
