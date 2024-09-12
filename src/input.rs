@@ -1,5 +1,6 @@
 use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
 
+#[derive(Debug)]
 pub struct Input {
     pub is_up_pressed: bool,
     pub is_down_pressed: bool,
@@ -18,10 +19,7 @@ impl Input {
     }
 
     pub fn is_movement_keys_pressed(&self) -> bool {
-        self.is_down_pressed
-            || self.is_up_pressed
-            || self.is_right_pressed
-            || self.is_left_pressed
+        self.is_down_pressed || self.is_up_pressed || self.is_right_pressed || self.is_left_pressed
     }
 
     /// Horizontal movement unit-vector based on pressed keys
@@ -47,11 +45,12 @@ impl Input {
     pub fn process_events(&mut self, event: &WindowEvent) -> bool {
         match event {
             WindowEvent::KeyboardInput {
-                input: KeyboardInput {
-                    state,
-                    virtual_keycode: Some(keycode),
-                    ..
-                },
+                input:
+                    KeyboardInput {
+                        state,
+                        virtual_keycode: Some(keycode),
+                        ..
+                    },
                 ..
             } => {
                 let is_pressed = *state == ElementState::Pressed;
