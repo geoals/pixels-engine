@@ -5,6 +5,7 @@ use crate::draw::draw_grid;
 use image::RgbaImage;
 use pixels::{Error, Pixels, SurfaceTexture};
 use player::Gengar;
+use vec2::Vec2;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -15,10 +16,11 @@ use crate::input::Input;
 mod draw;
 mod input;
 mod player;
+mod vec2;
 
 pub const WIDTH: u32 = 640;
 pub const HEIGHT: u32 = 576;
-pub const GRID_SIZE: u32 = 64;
+pub const TILE_SIZE: u32 = 64;
 // pub const WIDTH: u32 = 640 / 4;
 // pub const HEIGHT: u32 = 576 / 4;
 // pub const GRID_SIZE: u32 = 64 / 4;
@@ -51,7 +53,7 @@ impl World {
             entities: vec![
                 // Gengar::new("./assets/gengar-16.png", 0.0, 0.0),
                 Box::new(Gengar::new("./assets/gengar-64.png", 0.0, 0.0)),
-                Box::new(Obstruction::new(2, 2, GRID_SIZE as i32)),
+                Box::new(Obstruction::new(2, 2, TILE_SIZE as i32)),
             ],
             input: Input::new(),
             pixels,
@@ -128,13 +130,13 @@ trait Render {
                 let src_x = (i % image_width) as i32;
                 let src_y = (i / image_height) as i32;
 
-                let frame_offset = (((self.pos_y().floor() as i32 + src_y) * WIDTH as i32
-                    + (self.pos_x().floor() as i32 + src_x))
+                let frame_offset = (((self.position().y.floor() as i32 + src_y) * WIDTH as i32
+                    + (self.position().x.floor() as i32 + src_x))
                     * 4) as usize;
 
                 if frame_offset > frame.len()
-                    || self.pos_x().floor() as i32 + src_x >= WIDTH as i32
-                    || self.pos_x().floor() as i32 + src_x < 0
+                    || self.position().x.floor() as i32 + src_x >= WIDTH as i32
+                    || self.position().x.floor() as i32 + src_x < 0
                 {
                     continue;
                 }
@@ -152,21 +154,22 @@ trait Render {
     fn pixels(&self) -> Option<&RgbaImage> {
         None
     }
-    fn pos_x(&self) -> f32;
-    fn pos_y(&self) -> f32;
+
+    fn position(&self) -> Vec2;
 }
 
 struct Obstruction {
-    grid_x: u32,
-    grid_y: u32,
+    position: Vec2,
     size: i32,
 }
 
 impl Obstruction {
     fn new(grid_x: u32, grid_y: u32, size: i32) -> Self {
         Self {
-            grid_x,
-            grid_y,
+            position: Vec2::new(
+                grid_x as f32 * TILE_SIZE as f32,
+                grid_y as f32 * TILE_SIZE as f32,
+            ),
             size,
         }
     }
@@ -174,27 +177,23 @@ impl Obstruction {
 
 impl Render for Obstruction {
     fn draw(&self, frame: &mut [u8]) {
-        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-            let x = (i % WIDTH as usize) as f32;
-            let y = (i / WIDTH as usize) as f32;
-
-            let inside_the_box = x >= self.pos_x()
-                && x < self.pos_x() + self.size as f32
-                && y >= self.pos_y()
-                && y < self.pos_y() + self.size as f32;
-
-            if inside_the_box {
-                pixel.copy_from_slice(&[255, 0, 0, 255])
-            }
-        }
+        // for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+        //     let x = (i % WIDTH as usize) as f32;
+        //     let y = (i / WIDTH as usize) as f32;
+        //
+        //     let inside_the_box = x >= self.pos_x()
+        //         && x < self.pos_x() + self.size as f32
+        //         && y >= self.pos_y()
+        //         && y < self.pos_y() + self.size as f32;
+        //
+        //     if inside_the_box {
+        //         pixel.copy_from_slice(&[255, 0, 0, 255])
+        //     }
+        // }
     }
 
-    fn pos_x(&self) -> f32 {
-        (self.grid_x * GRID_SIZE) as f32
-    }
-
-    fn pos_y(&self) -> f32 {
-        (self.grid_y * GRID_SIZE) as f32
+    fn position(&self) -> Vec2 {
+        self.position
     }
 
     fn update(&mut self, input: &Input, delta_time: Duration) {}
@@ -218,6 +217,7 @@ fn main() -> Result<(), Error> {
     // Define the target FPS and calculate the desired frame interval
     let target_fps = 30;
     let frame_interval = Duration::from_micros(1_000_000 / target_fps);
+    let mut last_time_for_fps_print = Instant::now();
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !world.input.process_events(&event) => match event {
@@ -244,9 +244,16 @@ fn main() -> Result<(), Error> {
             } else {
                 Duration::ZERO
             };
+
+            last_time_for_fps_print += elapsed_time;
+
+            if last_time_for_fps_print.elapsed().as_millis() > 500 {
+                dbg!(world.delta_time);
+                last_time_for_fps_print = Instant::now();
+            }
+
             thread::sleep(sleep_time);
             world.delta_time = elapsed_time + sleep_time;
-            dbg!(world.delta_time);
         }
         Event::MainEventsCleared => {
             window.request_redraw();

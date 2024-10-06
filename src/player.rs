@@ -1,15 +1,14 @@
 use crate::input::Input;
-use crate::{Movement, Render, GRID_SIZE};
+use crate::vec2::Vec2;
+use crate::{Movement, Render, TILE_SIZE};
 use image::RgbaImage;
 use std::time::Duration;
 
 pub struct Gengar {
     pixels: Box<RgbaImage>,
-    /// Utility value used to determine correct movement when two movement keys are pressed at once
-    direction: Direction,
+    direction: Option<Direction>,
     is_moving: bool,
-    pos_x: f32,
-    pos_y: f32,
+    position: Vec2,
 }
 
 #[derive(PartialEq, Debug)]
@@ -20,86 +19,45 @@ enum Direction {
     Down,
 }
 
-const GRID_TOLERANCE: i32 = GRID_SIZE as i32 / 4; // Adjust this value based on your needs
+const GRID_TOLERANCE: i32 = TILE_SIZE as i32 / 4; // Adjust this value based on your needs
 
 impl Gengar {
     pub fn new(path: &str, pos_x: f32, pos_y: f32) -> Self {
         let image = image::open(path).unwrap();
+
         let pixels = Box::new(image.as_rgba8().unwrap().to_owned());
         Self {
             pixels,
-            pos_x,
-            pos_y,
+            direction: None,
             is_moving: false,
-            direction: Direction::Right,
+            position: Vec2::new(pos_x, pos_y),
         }
     }
 
-    fn is_on_grid(&self) -> bool {
-        self.is_on_vertical_grid() && self.is_on_horizontal_grid()
+    fn snap_to_grid(&mut self) {
+        self.position.x = (self.position.x / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+        self.position.y = (self.position.y / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+        self.direction = None;
     }
 
-    fn is_on_vertical_grid(&self) -> bool {
-        dbg!(self.pos_x().round());
-        (self.pos_x.round() as i32 % GRID_SIZE as i32).abs() < GRID_TOLERANCE
-    }
+    fn has_reached_next_tile(&self) -> bool {
+        // check dirction of movement and determine you are within the grid tolerance, if so return true
 
-    fn is_on_horizontal_grid(&self) -> bool {
-        (self.pos_y.round() as i32 % GRID_SIZE as i32).abs() < GRID_TOLERANCE
-    }
-
-    fn has_reached_tile(&self, move_dist: f32) -> bool {
-        match self.direction {
-            Direction::Left => todo!(),
-            Direction::Right => {
-                dbg!(self.pos_x);
-                dbg!(self.pos_x.floor() + move_dist);
-                self.pos_x >= (self.pos_x.floor() + move_dist)
+        if let Some(direction) = &self.direction {
+            match direction {
+                Direction::Up => todo!(),
+                Direction::Left => todo!(),
+                Direction::Right => todo!(),
+                Direction::Down => todo!(),
             }
-            Direction::Up => todo!(),
-            Direction::Down => todo!(),
         }
+
+        false
     }
-
-    fn snap_to_grid(&mut self, move_dist: f32) {
-        let grid_x = (self.pos_x / GRID_SIZE as f32).round() * GRID_SIZE as f32;
-        let grid_y = (self.pos_y / GRID_SIZE as f32).round() * GRID_SIZE as f32;
-
-        let distance_to_grid_x = (self.pos_x - grid_x).abs();
-        let distance_to_grid_y = (self.pos_y - grid_y).abs();
-
-        if distance_to_grid_x <= move_dist {
-            self.pos_x = grid_x;
-        }
-        if distance_to_grid_y <= move_dist {
-            self.pos_y = grid_y;
-        }
-    }
-
-    // fn set_first_direction(&mut self, input: &Input) {
-    //     if self.direction == Direction::None {
-    //         if input.x() == 0 {
-    //             if input.y() == -1 {
-    //                 self.direction = Direction::Up;
-    //             }
-    //             if input.y() == 1 {
-    //                 self.direction = Direction::Down;
-    //             }
-    //         }
-    //         if input.y() == 0 {
-    //             if input.x() == -1 {
-    //                 self.direction = Direction::Left;
-    //             }
-    //             if input.x() == 1 {
-    //                 self.direction = Direction::Right;
-    //             }
-    //         }
-    //     }
-    // }
 }
 
 // Pixels per second
-const GENGAR_SPEED: f32 = 64.0;
+const GENGAR_SPEED: f32 = 128.0;
 
 impl Movement for Gengar {
     fn update(&mut self, input: &Input, delta_time: Duration) {}
@@ -110,58 +68,66 @@ impl Render for Gengar {
         Some(self.pixels.as_ref())
     }
 
-    fn pos_x(&self) -> f32 {
-        self.pos_x
+    fn position(&self) -> Vec2 {
+        self.position
     }
-
-    fn pos_y(&self) -> f32 {
-        self.pos_y
-    }
-
     fn update(&mut self, input: &Input, delta_time: Duration) {
         let delta_time = delta_time.as_secs_f32();
-        let move_dist = movement_distance(delta_time);
+
+        match input.y() {
+            1 => {
+                self.is_moving = true;
+                self.direction = Some(Direction::Down);
+            }
+            -1 => {
+                self.is_moving = true;
+                self.direction = Some(Direction::Up);
+            }
+            _ => {}
+        }
+        match input.x() {
+            1 => {
+                self.is_moving = true;
+                self.direction = Some(Direction::Right);
+            }
+            -1 => {
+                self.is_moving = true;
+                self.direction = Some(Direction::Left);
+            }
+            _ => {}
+        }
+
+        if input.y() == 0 && input.x() == 0 && self.has_reached_next_tile() {
+            self.is_moving = false;
+            self.direction = None;
+
+            // let tile_boundary = (self.position.x / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+            // if (self.position.x - tile_boundary).abs() < 0.1 {
+            //     self.position.x = tile_boundary;
+            //     self.snap_to_grid();
+            // }
+            //
+            // let tile_boundary = (self.position.y / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+            // if (self.position.y - tile_boundary).abs() < 0.1 {
+            //     self.position.y = tile_boundary;
+            //     self.snap_to_grid();
+            // }
+        }
 
         if !self.is_moving {
-            match input.y() {
-                1 => {
-                    self.is_moving = true;
-                    self.direction = Direction::Down;
-                }
-                -1 => {
-                    self.is_moving = true;
-                    self.direction = Direction::Up;
-                }
-                _ => {}
-            }
-            match input.x() {
-                1 => {
-                    self.is_moving = true;
-                    self.direction = Direction::Right;
-                }
-                -1 => {
-                    self.is_moving = true;
-                    self.direction = Direction::Left;
-                }
-                _ => {}
-            }
+            return;
         }
 
-        if input.y() == 0 && input.x() == 0 {
-            self.is_moving = false;
-        }
+        if let Some(direction) = &self.direction {
+            let movement_vector = match direction {
+                Direction::Up => Vec2::new(0.0, -1.0),
+                Direction::Down => Vec2::new(0.0, 1.0),
+                Direction::Left => Vec2::new(-1.0, 0.0),
+                Direction::Right => Vec2::new(1.0, 0.0),
+            };
 
-        if self.is_moving {
-            match self.direction {
-                Direction::Left => self.pos_x -= move_dist,
-                Direction::Right => self.pos_x += move_dist,
-                Direction::Up => self.pos_y -= move_dist,
-                Direction::Down => self.pos_y += move_dist,
-            }
+            let movement_step = movement_vector.mul(GENGAR_SPEED * delta_time);
+            self.position = self.position.add(movement_step);
         }
     }
-}
-
-fn movement_distance(delta_time: f32) -> f32 {
-    GENGAR_SPEED * delta_time
 }

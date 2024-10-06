@@ -1,4 +1,4 @@
-use crate::{GRID_SIZE, HEIGHT, WIDTH};
+use crate::{HEIGHT, TILE_SIZE, WIDTH};
 
 /// Draw horizontal or vertical line pixel by pixel into frame
 pub fn line(from: (u32, u32), to: (u32, u32), frame: &mut [u8]) {
@@ -23,7 +23,6 @@ pub fn line(from: (u32, u32), to: (u32, u32), frame: &mut [u8]) {
         let x_start = x0.min(x1);
         let x_end = x0.max(x1);
 
-
         for x in x_start..x_end {
             let index = (x + y0 * WIDTH) as usize * 4;
             // Set RGBA to white fully opaque
@@ -36,10 +35,11 @@ pub fn line(from: (u32, u32), to: (u32, u32), frame: &mut [u8]) {
 }
 
 pub fn draw_grid(frame: &mut [u8]) {
-    for x in 1..(WIDTH / GRID_SIZE) {
-        line((x * GRID_SIZE, 0), (x * GRID_SIZE, HEIGHT), frame);
+    for x in 1..(WIDTH / TILE_SIZE) {
+        line((x * TILE_SIZE, 0), (x * TILE_SIZE, HEIGHT), frame);
     }
-    for y in 0..(HEIGHT / GRID_SIZE) {
-        line((0, y * GRID_SIZE), (WIDTH, y * GRID_SIZE), frame);
+    for y in 0..(HEIGHT / TILE_SIZE) {
+        line((0, y * TILE_SIZE), (WIDTH, y * TILE_SIZE), frame);
     }
 }
+
