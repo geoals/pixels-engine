@@ -42,4 +42,3 @@ pub fn draw_grid(frame: &mut [u8]) {
         line((0, y * TILE_SIZE), (WIDTH, y * TILE_SIZE), frame);
     }
 }
-

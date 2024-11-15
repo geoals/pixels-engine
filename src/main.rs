@@ -21,18 +21,6 @@ mod vec2;
 pub const WIDTH: u32 = 640;
 pub const HEIGHT: u32 = 576;
 pub const TILE_SIZE: u32 = 64;
-// pub const WIDTH: u32 = 640 / 4;
-// pub const HEIGHT: u32 = 576 / 4;
-// pub const GRID_SIZE: u32 = 64 / 4;
-
-struct Draw;
-struct Update;
-struct KeyboardMovement;
-struct Entity {
-    drawable: Option<Draw>,
-    updatable: Option<Update>,
-    keyboard_movable: Option<KeyboardMovement>,
-}
 
 struct World {
     entities: Vec<Box<dyn Render>>,
@@ -51,9 +39,10 @@ impl World {
 
         Self {
             entities: vec![
-                // Gengar::new("./assets/gengar-16.png", 0.0, 0.0),
-                Box::new(Gengar::new("./assets/gengar-64.png", 0.0, 0.0)),
+                Box::new(Gengar::new()),
                 Box::new(Obstruction::new(2, 2, TILE_SIZE as i32)),
+                Box::new(Obstruction::new(3, 2, TILE_SIZE as i32)),
+                Box::new(Obstruction::new(4, 2, TILE_SIZE as i32)),
             ],
             input: Input::new(),
             pixels,
@@ -82,8 +71,8 @@ impl World {
     /// Clear the screen
     fn clear(&mut self) {
         for (i, byte) in self.pixels.frame_mut().iter_mut().enumerate() {
-            *byte = 0;
-            // *byte = if i % 4 == 3 { 255 } else { 0 };
+            // *byte = 0;
+            *byte = if i % 4 == 3 { 255 } else { 0 };
         }
     }
 }
@@ -112,43 +101,39 @@ impl World {
 //     }
 // }
 
-trait Movement {
-    fn update(&mut self, input: &Input, delta_time: Duration);
-}
-
 trait Render {
     fn draw(&self, frame: &mut [u8]) {
-        if let Some(pixels) = self.pixels() {
-            let image_width = pixels.width() as usize;
-            let image_height = pixels.height() as usize;
+        let Some(pixels) = self.pixels() else { return };
+        let image_width = pixels.width() as usize;
+        // let image_height = pixels.height() as usize;
 
-            for (i, pixel) in pixels.chunks_exact(4).enumerate() {
-                // Don't draw fully transparent pixels
-                if pixel[3] == 0 {
-                    continue;
-                }
-                let src_x = (i % image_width) as i32;
-                let src_y = (i / image_height) as i32;
+        for (i, pixel) in pixels.chunks_exact(4).enumerate() {
+            // Don't draw fully transparent pixels
+            if pixel[3] == 0 {
+                continue;
+            }
+            let src_x = (i % image_width) as i32;
+            let src_y = (i / image_width) as i32;
+            // let src_y = (i / image_height) as i32;
 
-                let frame_offset = (((self.position().y.floor() as i32 + src_y) * WIDTH as i32
-                    + (self.position().x.floor() as i32 + src_x))
-                    * 4) as usize;
+            let frame_offset = (((self.position().y.floor() as i32 + src_y) * WIDTH as i32
+                + (self.position().x.floor() as i32 + src_x))
+                * 4) as usize;
 
-                if frame_offset > frame.len()
-                    || self.position().x.floor() as i32 + src_x >= WIDTH as i32
-                    || self.position().x.floor() as i32 + src_x < 0
-                {
-                    continue;
-                }
+            if frame_offset > frame.len()
+                || self.position().x.floor() as i32 + src_x >= WIDTH as i32
+                || self.position().x.floor() as i32 + src_x < 0
+            {
+                continue;
+            }
 
-                if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
-                    dest_pixel.copy_from_slice(pixel);
-                }
+            if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
+                dest_pixel.copy_from_slice(pixel);
             }
         }
     }
-    //
-    // // should all renderable things have update method?
+
+    // should all renderable things have update method?
     fn update(&mut self, input: &Input, delta_time: Duration);
 
     fn pixels(&self) -> Option<&RgbaImage> {
@@ -177,19 +162,19 @@ impl Obstruction {
 
 impl Render for Obstruction {
     fn draw(&self, frame: &mut [u8]) {
-        // for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
-        //     let x = (i % WIDTH as usize) as f32;
-        //     let y = (i / WIDTH as usize) as f32;
-        //
-        //     let inside_the_box = x >= self.pos_x()
-        //         && x < self.pos_x() + self.size as f32
-        //         && y >= self.pos_y()
-        //         && y < self.pos_y() + self.size as f32;
-        //
-        //     if inside_the_box {
-        //         pixel.copy_from_slice(&[255, 0, 0, 255])
-        //     }
-        // }
+        for (i, pixel) in frame.chunks_exact_mut(4).enumerate() {
+            let x = (i % WIDTH as usize) as f32;
+            let y = (i / WIDTH as usize) as f32;
+
+            let inside_the_box = x >= self.position().x
+                && x < self.position().x + self.size as f32
+                && y >= self.position().y
+                && y < self.position().y + self.size as f32;
+
+            if inside_the_box {
+                pixel.copy_from_slice(&[255, 0, 0, 255])
+            }
+        }
     }
 
     fn position(&self) -> Vec2 {

@@ -26,7 +26,8 @@ impl Input {
     pub fn y(&self) -> i32 {
         if self.up && !self.down {
             return -1;
-        } else if self.down && !self.up {
+        }
+        if self.down && !self.up {
             return 1;
         }
         0
@@ -41,6 +42,10 @@ impl Input {
             return 1;
         }
         0
+    }
+
+    pub fn vector(&self) -> (i32, i32) {
+        (self.x(), self.y())
     }
 
     pub fn process_events(&mut self, event: &WindowEvent) -> bool {

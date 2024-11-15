@@ -5,6 +5,8 @@ pub struct Vec2 {
 }
 
 impl Vec2 {
+    pub const ZERO: Self = Self { x: 0.0, y: 0.0 };
+
     pub fn new(x: f32, y: f32) -> Self {
         Vec2 { x, y }
     }
