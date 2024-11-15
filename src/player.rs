@@ -9,6 +9,7 @@ pub struct Gengar {
     direction: Option<Direction>,
     is_moving: bool,
     position: Vec2,
+    previous_position: Vec2,
 }
 
 #[derive(PartialEq, Debug)]
@@ -31,6 +32,7 @@ impl Gengar {
             direction: None,
             is_moving: false,
             position: Vec2::new(pos_x, pos_y),
+            previous_position: Vec2::new(pos_x, pos_y),
         }
     }
 
@@ -43,14 +45,14 @@ impl Gengar {
     fn has_reached_next_tile(&self) -> bool {
         // check dirction of movement and determine you are within the grid tolerance, if so return true
 
-        if let Some(direction) = &self.direction {
-            match direction {
-                Direction::Up => todo!(),
-                Direction::Left => todo!(),
-                Direction::Right => todo!(),
-                Direction::Down => todo!(),
-            }
-        }
+        // if let Some(direction) = &self.direction {
+        //     match direction {
+        //         Direction::Up => todo!(),
+        //         Direction::Left => todo!(),
+        //         Direction::Right => todo!(),
+        //         Direction::Down => todo!(),
+        //     }
+        // }
 
         false
     }
@@ -71,7 +73,9 @@ impl Render for Gengar {
     fn position(&self) -> Vec2 {
         self.position
     }
+
     fn update(&mut self, input: &Input, delta_time: Duration) {
+        let previous_position = self.position;
         let delta_time = delta_time.as_secs_f32();
 
         match input.y() {
