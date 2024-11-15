@@ -48,6 +48,22 @@ impl Direction {
             Direction::Left | Direction::Right => Axis::Horizontal,
         }
     }
+
+    fn x(&self) -> i32 {
+        match self {
+            Direction::Left => -1,
+            Direction::Right => 1,
+            _ => 0,
+        }
+    }
+
+    fn y(&self) -> i32 {
+        match self {
+            Direction::Up => -1,
+            Direction::Down => 1,
+            _ => 0,
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]
@@ -57,16 +73,16 @@ enum Axis {
 }
 
 // Pixels per second
-const GENGAR_SPEED: f32 = 256.0;
+const PLAYER_SPEED: f32 = 256.0;
 
-pub struct Gengar {
+pub struct Player {
     pixels: Box<RgbaImage>,
     direction: Direction,
     is_moving: bool,
     position: Vec2,
 }
 
-impl Gengar {
+impl Player {
     pub fn new() -> Self {
         let image_path = "./assets/gengar-64.png";
         let image = image::open(image_path).unwrap();
@@ -86,9 +102,13 @@ impl Gengar {
     }
 
     fn will_reach_next_tile_in_next_update(&self, delta_time: f32) -> bool {
+        if !self.is_moving {
+            return false;
+        }
+
         let current_tile = self.position.tile_coordinate();
         let movement_vector = self.direction.to_vector();
-        let movement_step = movement_vector.mul(GENGAR_SPEED * delta_time);
+        let movement_step = movement_vector.mul(PLAYER_SPEED * delta_time);
         let next_position = self.position.add(movement_step);
         let next_tile = next_position.tile_coordinate();
 
@@ -97,12 +117,24 @@ impl Gengar {
 
     fn apply_movement(&mut self, delta_time: f32) {
         let movement_vector = self.direction.to_vector();
-        let movement_step = movement_vector.mul(GENGAR_SPEED * delta_time);
+        let movement_step = movement_vector.mul(PLAYER_SPEED * delta_time);
         self.position = self.position.add(movement_step);
+    }
+
+    fn is_on_horizontal_grid(&self) -> bool {
+        self.position.y % TILE_SIZE as f32 == 0.0
+    }
+
+    fn is_on_vertical_grid(&self) -> bool {
+        self.position.x % TILE_SIZE as f32 == 0.0
+    }
+
+    fn is_on_grid(&self) -> bool {
+        self.is_on_horizontal_grid() && self.is_on_vertical_grid()
     }
 }
 
-impl Render for Gengar {
+impl Render for Player {
     fn pixels(&self) -> Option<&RgbaImage> {
         Some(self.pixels.as_ref())
     }
@@ -115,8 +147,8 @@ impl Render for Gengar {
         let delta_time = delta_time.as_secs_f32();
 
         let should_stop = match self.direction.axis() {
-            Axis::Horizontal if input.x() == 0 => true,
-            Axis::Vertical if input.y() == 0 => true,
+            Axis::Horizontal if input.x() * self.direction.x() <= 0 => true,
+            Axis::Vertical if input.y() * self.direction.y() <= 0 => true,
             _ => false,
         };
 
@@ -125,10 +157,28 @@ impl Render for Gengar {
             self.snap_to_grid();
         }
 
-        if !self.is_moving {
-            if let Some(new_direction) = Direction::from_vector(input.vector()) {
-                self.is_moving = true;
-                self.direction = new_direction;
+        if Direction::from_vector(input.vector()).is_some() {
+            self.is_moving = true;
+        }
+
+        if !self.is_moving || self.is_on_grid() {
+            match input.y() {
+                1 => {
+                    self.direction = Direction::Down;
+                }
+                -1 => {
+                    self.direction = Direction::Up;
+                }
+                _ => {}
+            }
+            match input.x() {
+                1 => {
+                    self.direction = Direction::Right;
+                }
+                -1 => {
+                    self.direction = Direction::Left;
+                }
+                _ => {}
             }
         }
 

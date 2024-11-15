@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use crate::draw::draw_grid;
 use image::RgbaImage;
 use pixels::{Error, Pixels, SurfaceTexture};
-use player::Gengar;
+use player::Player;
 use vec2::Vec2;
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
@@ -39,7 +39,7 @@ impl World {
 
         Self {
             entities: vec![
-                Box::new(Gengar::new()),
+                Box::new(Player::new()),
                 Box::new(Obstruction::new(2, 2, TILE_SIZE as i32)),
                 Box::new(Obstruction::new(3, 2, TILE_SIZE as i32)),
                 Box::new(Obstruction::new(4, 2, TILE_SIZE as i32)),

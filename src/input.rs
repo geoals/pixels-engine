@@ -18,10 +18,6 @@ impl Input {
         }
     }
 
-    // pub fn is_movement_keys_pressed(&self) -> bool {
-    //     self.down || self.up || self.right || self.left
-    // }
-
     /// Horizontal movement unit-vector based on pressed keys
     pub fn y(&self) -> i32 {
         if self.up && !self.down {
@@ -42,6 +38,10 @@ impl Input {
             return 1;
         }
         0
+    }
+
+    pub fn none(&self) -> bool {
+        !self.up && !self.down && !self.left && !self.right
     }
 
     pub fn vector(&self) -> (i32, i32) {
