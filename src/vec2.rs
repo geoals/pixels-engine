@@ -1,4 +1,4 @@
-use std::ops::{Add, Mul};
+use std::ops::{Add, AddAssign, Mul};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec2 {
@@ -45,6 +45,13 @@ impl Mul<f32> for Vec2 {
             x: self.x * scalar,
             y: self.y * scalar,
         }
+    }
+}
+
+impl AddAssign for Vec2 {
+    fn add_assign(&mut self, rhs: Self) {
+        self.x += rhs.x;
+        self.y += rhs.y;
     }
 }
 

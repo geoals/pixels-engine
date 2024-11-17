@@ -1,9 +1,10 @@
-use crate::movement_util::Direction;
+use crate::input::Input;
+use crate::movement_util::{Axis, Direction};
 
 use crate::vec2::Vec2;
 
 #[derive(Debug, Default)]
-pub struct Sprite {
+pub struct AnimatedSprite {
     pub sprite_type: SpriteType,
     pub current_animation_frame: usize,
     pub frame_time: f32,
@@ -24,12 +25,12 @@ pub mod sprite_positions {
 
     pub const PLAYER_WALK_UP: &[(u32, u32)] = &[(60, 34), (77, 34), (94, 34), (77, 34)];
 
-    pub const PLAYER_WALK_LEFT: &[(u32, u32)] = &[(111, 34), (128, 34)];
+    pub const PLAYER_WALK_LEFT: &[(u32, u32)] = &[(128, 34), (111, 34)];
 
-    pub const PLAYER_WALK_RIGHT: &[(u32, u32)] = &[(145, 34), (162, 34)];
+    pub const PLAYER_WALK_RIGHT: &[(u32, u32)] = &[(162, 34), (145, 34)];
 }
 
-impl Sprite {
+impl AnimatedSprite {
     pub fn new(sprite_type: SpriteType) -> Self {
         Self {
             sprite_type,
@@ -64,18 +65,32 @@ pub enum SpriteType {
 
 pub type Position = Vec2;
 
+#[derive(Default)]
 pub struct Movement {
     pub speed: f32,
     pub direction: Direction,
     pub is_moving: bool,
+
+    // These are used to apply a delay before starting movement
+    pub start_delay: f32,
+    // No delay when moving in this direction
+    pub initial_direction: Direction,
 }
 
-impl Default for Movement {
-    fn default() -> Self {
+impl Movement {
+    pub fn new(speed: f32) -> Self {
         Self {
-            speed: 256.0,
-            direction: Direction::Down,
-            is_moving: false,
+            speed,
+            ..Default::default()
+        }
+    }
+
+    /// Returns false for no input or input in oppositing or perpendicular direction
+    pub fn input_not_in_same_direction(&self, input: &Input) -> bool {
+        match self.direction.axis() {
+            Axis::Horizontal if input.x() * self.direction.x() <= 0 => true,
+            Axis::Vertical if input.y() * self.direction.y() <= 0 => true,
+            _ => false,
         }
     }
 }

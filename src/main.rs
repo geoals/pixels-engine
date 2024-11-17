@@ -2,7 +2,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use pixels::{Error, Pixels, SurfaceTexture};
-use pixels_engine::components::{Movement, Position, Sprite, SpriteType};
+use pixels_engine::components::{AnimatedSprite, Movement, Position, SpriteType};
 use pixels_engine::draw::draw_grid;
 use pixels_engine::input::Input;
 use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
@@ -39,10 +39,10 @@ impl Application {
 
         let player = world.new_entity();
 
-        world.add_component_to_entity(player, Sprite::new(SpriteType::Player));
+        world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
 
         world.add_component_to_entity(player, Position::ZERO);
-        world.add_component_to_entity(player, Movement::default());
+        world.add_component_to_entity(player, Movement::new(192.0));
         world.add_system(SpriteRenderSystem);
         world.add_system(MovementSystem);
         world.add_system(AnimationSystem);

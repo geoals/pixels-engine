@@ -1,26 +1,6 @@
 use crate::vec2::Vec2;
 use crate::TILE_SIZE;
 
-pub trait Position {
-    fn tile_coordinate(&self) -> (i32, i32);
-}
-
-impl Position for Vec2 {
-    fn tile_coordinate(&self) -> (i32, i32) {
-        let x = (self.x / TILE_SIZE as f32).floor() as i32;
-        let y = (self.y / TILE_SIZE as f32).floor() as i32;
-        (x, y)
-    }
-}
-
-impl Position for &Vec2 {
-    fn tile_coordinate(&self) -> (i32, i32) {
-        let x = (self.x / TILE_SIZE as f32).floor() as i32;
-        let y = (self.y / TILE_SIZE as f32).floor() as i32;
-        (x, y)
-    }
-}
-
 pub trait PositionExt {
     fn tile_coordinate(&self) -> (i32, i32);
 }
@@ -33,11 +13,12 @@ impl PositionExt for Vec2 {
     }
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Default, Copy, Clone)]
 pub enum Direction {
     Left,
     Right,
     Up,
+    #[default]
     Down,
 }
 
