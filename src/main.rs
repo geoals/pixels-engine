@@ -2,7 +2,8 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use crate::draw::draw_grid;
-use ecs::{Movement, Position, Sprite, World};
+use components::{Movement, Position, Sprite};
+use ecs::World;
 use pixels::{Error, Pixels, SurfaceTexture};
 use systems::movement::MovementSystem;
 use systems::render::RenderSystem;
@@ -14,6 +15,7 @@ use winit::window::{Window, WindowBuilder};
 
 use crate::input::Input;
 
+mod components;
 mod draw;
 mod ecs;
 mod input;

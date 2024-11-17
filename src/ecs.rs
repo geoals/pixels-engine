@@ -3,11 +3,7 @@
 use std::any::Any;
 use std::cell::{RefCell, RefMut};
 
-use image::RgbaImage;
-
-use crate::movement_util::Direction;
 use crate::systems::System;
-use crate::vec2::Vec2;
 
 pub struct World {
     entities_count: usize,
@@ -95,25 +91,5 @@ impl<T: 'static> ComponentVec for RefCell<Vec<Option<T>>> {
 
     fn push_none(&mut self) {
         self.get_mut().push(None)
-    }
-}
-
-pub struct Sprite(pub Box<RgbaImage>);
-
-pub struct Position(pub Vec2);
-
-pub struct Movement {
-    pub speed: f32,
-    pub direction: Direction,
-    pub is_moving: bool,
-}
-
-impl Movement {
-    pub fn default() -> Self {
-        Self {
-            speed: 256.0,
-            direction: Direction::Down,
-            is_moving: false,
-        }
     }
 }

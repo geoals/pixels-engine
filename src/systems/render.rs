@@ -3,7 +3,8 @@ use std::time::Duration;
 use pixels::Pixels;
 
 use crate::{
-    ecs::{Position, Sprite, World},
+    components::{Position, Sprite},
+    ecs::World,
     input::Input,
     WIDTH,
 };
