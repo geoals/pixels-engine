@@ -1,27 +1,26 @@
 // based on https://ianjk.com/ecs-in-rust/
 
-use std::any::Any;
+use std::any::{Any, TypeId};
 use std::cell::{RefCell, RefMut};
+use std::collections::HashMap;
 
 use crate::systems::System;
 
+#[derive(Default)]
 pub struct World {
     entities_count: usize,
-    component_vecs: Vec<Box<dyn ComponentVec>>,
+    components: HashMap<TypeId, Box<dyn ComponentVec>>,
     systems: Vec<Box<dyn System>>,
 }
+
 impl World {
     pub fn new() -> Self {
-        Self {
-            entities_count: 0,
-            component_vecs: Vec::new(),
-            systems: Vec::new(),
-        }
+        Self::default()
     }
 
     pub fn new_entity(&mut self) -> usize {
         let entity_id = self.entities_count;
-        for component_vec in self.component_vecs.iter_mut() {
+        for component_vec in self.components.values_mut() {
             component_vec.push_none();
         }
         self.entities_count += 1;
@@ -37,10 +36,12 @@ impl World {
     }
 
     pub fn add_component_to_entity<T: 'static>(&mut self, entity: usize, component: T) {
-        for component_vec in self.component_vecs.iter_mut() {
+        let type_id = TypeId::of::<ComponentStorage<T>>();
+
+        if let Some(component_vec) = self.components.get_mut(&type_id) {
             if let Some(component_vec) = component_vec
                 .as_any_mut()
-                .downcast_mut::<RefCell<Vec<Option<T>>>>()
+                .downcast_mut::<ComponentStorage<T>>()
             {
                 component_vec.get_mut()[entity] = Some(component);
                 return;
@@ -57,22 +58,23 @@ impl World {
 
         // Give this Entity the Component.
         new_component_vec[entity] = Some(component);
-        self.component_vecs
-            .push(Box::new(RefCell::new(new_component_vec)));
+        self.components
+            .insert(type_id, Box::new(RefCell::new(new_component_vec)));
     }
 
     pub fn borrow_components_mut<T: 'static>(&self) -> Option<RefMut<Vec<Option<T>>>> {
-        for component_vec in self.component_vecs.iter() {
-            if let Some(component_vec) = component_vec
+        let type_id = TypeId::of::<ComponentStorage<T>>();
+
+        self.components.get(&type_id).and_then(|component_vec| {
+            component_vec
                 .as_any()
-                .downcast_ref::<RefCell<Vec<Option<T>>>>()
-            {
-                return Some(component_vec.borrow_mut());
-            }
-        }
-        None
+                .downcast_ref::<ComponentStorage<T>>()
+                .map(|component_vec| component_vec.borrow_mut())
+        })
     }
 }
+
+type ComponentStorage<T> = RefCell<Vec<Option<T>>>;
 
 trait ComponentVec {
     fn push_none(&mut self);
@@ -80,7 +82,7 @@ trait ComponentVec {
     fn as_any_mut(&mut self) -> &mut dyn Any;
 }
 
-impl<T: 'static> ComponentVec for RefCell<Vec<Option<T>>> {
+impl<T: 'static> ComponentVec for ComponentStorage<T> {
     fn as_any(&self) -> &dyn Any {
         self as &dyn Any
     }
