@@ -4,6 +4,7 @@ use pixels::Pixels;
 
 use crate::{ecs::World, input::Input};
 
+pub mod animation;
 pub mod movement;
 pub mod render;
 

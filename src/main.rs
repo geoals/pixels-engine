@@ -2,11 +2,13 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use pixels::{Error, Pixels, SurfaceTexture};
-use pixels_engine::components::{Movement, Position, Sprite};
+use pixels_engine::components::{Movement, Position, Sprite, SpriteType};
 use pixels_engine::draw::draw_grid;
 use pixels_engine::input::Input;
+use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
+use pixels_engine::systems::animation::AnimationSystem;
 use pixels_engine::systems::movement::MovementSystem;
-use pixels_engine::systems::render::RenderSystem;
+use pixels_engine::systems::render::SpriteRenderSystem;
 use pixels_engine::vec2::Vec2;
 use pixels_engine::{ecs, World, HEIGHT, TILE_SIZE, WIDTH};
 use winit::dpi::LogicalSize;
@@ -30,16 +32,20 @@ impl Application {
         };
 
         let mut world = World::new();
+
+        world.add_resource(CharacterSpritesheet(
+            Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
+        ));
+
         let player = world.new_entity();
 
-        let image_path = "./assets/gengar-64.png";
-        let image = image::open(image_path).unwrap();
-        let player_sprite = Box::new(image.as_rgba8().unwrap().to_owned());
-        world.add_component_to_entity(player, Sprite(player_sprite));
+        world.add_component_to_entity(player, Sprite::new(SpriteType::Player));
+
         world.add_component_to_entity(player, Position::ZERO);
         world.add_component_to_entity(player, Movement::default());
-        world.add_system(RenderSystem);
+        world.add_system(SpriteRenderSystem);
         world.add_system(MovementSystem);
+        world.add_system(AnimationSystem);
 
         Self {
             world,

@@ -3,7 +3,8 @@ pub mod draw;
 pub mod ecs;
 pub mod input;
 pub mod movement_util;
-mod resource;
+pub mod resource;
+pub mod spritesheet;
 pub mod systems;
 pub mod vec2;
 

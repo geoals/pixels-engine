@@ -3,63 +3,45 @@ use std::time::Duration;
 use pixels::Pixels;
 
 use crate::{
-    components::{Position, Sprite},
+    components::{Movement, Position, Sprite, SpriteType},
     ecs::World,
     input::Input,
-    WIDTH,
+    spritesheet::CharacterSpritesheet,
+    HEIGHT, WIDTH,
 };
 
 use super::System;
 
-pub struct RenderSystem;
+pub struct SpriteRenderSystem;
 
-impl System for RenderSystem {
+impl System for SpriteRenderSystem {
     fn update(&self, world: &World, pixels: &mut Pixels, _input: &Input, _delta_time: Duration) {
         let sprite_components = world.borrow_components_mut::<Sprite>().unwrap();
         let position_components = world.borrow_components_mut::<Position>().unwrap();
-        let zip = sprite_components.iter().zip(position_components.iter());
-        let iter = zip.filter_map(|(sprite, position)| {
-            if let (Some(sprite), Some(position)) = (sprite, position) {
-                Some((sprite, position))
-            } else {
-                None
-            }
-        });
+        let movement_components = world.borrow_components_mut::<Movement>().unwrap();
 
-        for (sprite, position) in iter {
-            self.draw(pixels.frame_mut(), sprite, position);
-        }
-    }
-}
+        for i in 0..sprite_components.len() {
+            if let (Some(sprite), Some(position), Some(movement)) = (
+                &sprite_components[i],
+                &position_components[i],
+                &movement_components[i],
+            ) {
+                let sheet = match sprite.sprite_type {
+                    SpriteType::Player => world.get_resource::<CharacterSpritesheet>().unwrap(),
+                };
 
-impl RenderSystem {
-    fn draw(&self, frame: &mut [u8], sprite: &Sprite, position: &Position) {
-        let sprite_pixels = sprite.0.as_ref();
-        let image_width = sprite_pixels.width() as usize;
-        // let image_height = pixels.height() as usize;
+                let (sprite_x, sprite_y) =
+                    sprite.get_current_frame(&movement.direction, movement.is_moving);
 
-        for (i, pixel) in sprite_pixels.chunks_exact(4).enumerate() {
-            // Don't draw fully transparent pixels
-            if pixel[3] == 0 {
-                continue;
-            }
-            let src_x = (i % image_width) as i32;
-            let src_y = (i / image_width) as i32;
-            // let src_y = (i / image_height) as i32;
-
-            let frame_offset = (((position.y.floor() as i32 + src_y) * WIDTH as i32
-                + (position.x.floor() as i32 + src_x))
-                * 4) as usize;
-
-            if frame_offset > frame.len()
-                || position.x.floor() as i32 + src_x >= WIDTH as i32
-                || position.x.floor() as i32 + src_x < 0
-            {
-                continue;
-            }
-
-            if let Some(dest_pixel) = frame.get_mut(frame_offset..frame_offset + 4) {
-                dest_pixel.copy_from_slice(pixel);
+                sheet.0.draw_sprite_to_buffer(
+                    sprite_x,
+                    sprite_y,
+                    pixels.frame_mut(),
+                    WIDTH,
+                    HEIGHT,
+                    position.x as u32,
+                    position.y as u32,
+                );
             }
         }
     }
