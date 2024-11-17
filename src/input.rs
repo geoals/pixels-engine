@@ -1,6 +1,6 @@
 use winit::event::{ElementState, KeyboardInput, VirtualKeyCode, WindowEvent};
 
-#[derive(Debug)]
+#[derive(Default, Debug)]
 pub struct Input {
     up: bool,
     down: bool,
@@ -10,12 +10,7 @@ pub struct Input {
 
 impl Input {
     pub fn new() -> Self {
-        Self {
-            up: false,
-            down: false,
-            left: false,
-            right: false,
-        }
+        Self::default()
     }
 
     /// Horizontal movement unit-vector based on pressed keys

@@ -1,16 +1,17 @@
-// based on https://ianjk.com/ecs-in-rust/
-
+use crate::resource::Resource;
+use crate::systems::System;
 use std::any::{Any, TypeId};
 use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 
-use crate::systems::System;
+type ComponentStorage<T> = RefCell<Vec<Option<T>>>;
 
 #[derive(Default)]
 pub struct World {
     entities_count: usize,
-    components: HashMap<TypeId, Box<dyn ComponentVec>>,
+    components: HashMap<TypeId, Box<dyn Any>>,
     systems: Vec<Box<dyn System>>,
+    resources: Resource,
 }
 
 impl World {
@@ -21,7 +22,9 @@ impl World {
     pub fn new_entity(&mut self) -> usize {
         let entity_id = self.entities_count;
         for component_vec in self.components.values_mut() {
-            component_vec.push_none();
+            if let Some(vec) = component_vec.downcast_mut::<ComponentStorage<Box<dyn Any>>>() {
+                vec.get_mut().push(None);
+            }
         }
         self.entities_count += 1;
         entity_id
@@ -36,62 +39,62 @@ impl World {
     }
 
     pub fn add_component_to_entity<T: 'static>(&mut self, entity: usize, component: T) {
-        let type_id = TypeId::of::<ComponentStorage<T>>();
+        let storage = self.components.entry(TypeId::of::<T>()).or_insert_with(|| {
+            let mut vec: Vec<Option<T>> = Vec::with_capacity(self.entities_count);
+            vec.extend((0..self.entities_count).map(|_| None));
+            Box::new(ComponentStorage::new(vec))
+        });
 
-        if let Some(component_vec) = self.components.get_mut(&type_id) {
-            if let Some(component_vec) = component_vec
-                .as_any_mut()
-                .downcast_mut::<ComponentStorage<T>>()
-            {
-                component_vec.get_mut()[entity] = Some(component);
-                return;
-            }
+        if let Some(storage) = storage.downcast_mut::<ComponentStorage<T>>() {
+            storage.get_mut()[entity] = Some(component);
         }
-
-        // No matching component storage exists yet, so we have to make one.
-        let mut new_component_vec: Vec<Option<T>> = Vec::with_capacity(self.entities_count);
-
-        // All existing entities don't have this component, so we give them `None`
-        for _ in 0..self.entities_count {
-            new_component_vec.push(None);
-        }
-
-        // Give this Entity the Component.
-        new_component_vec[entity] = Some(component);
-        self.components
-            .insert(type_id, Box::new(RefCell::new(new_component_vec)));
     }
 
     pub fn borrow_components_mut<T: 'static>(&self) -> Option<RefMut<Vec<Option<T>>>> {
-        let type_id = TypeId::of::<ComponentStorage<T>>();
-
-        self.components.get(&type_id).and_then(|component_vec| {
-            component_vec
-                .as_any()
-                .downcast_ref::<ComponentStorage<T>>()
-                .map(|component_vec| component_vec.borrow_mut())
-        })
-    }
-}
-
-type ComponentStorage<T> = RefCell<Vec<Option<T>>>;
-
-trait ComponentVec {
-    fn push_none(&mut self);
-    fn as_any(&self) -> &dyn Any;
-    fn as_any_mut(&mut self) -> &mut dyn Any;
-}
-
-impl<T: 'static> ComponentVec for ComponentStorage<T> {
-    fn as_any(&self) -> &dyn Any {
-        self as &dyn Any
+        self.components
+            .get(&TypeId::of::<T>())
+            .and_then(|component_vec| {
+                component_vec
+                    .downcast_ref::<ComponentStorage<T>>()
+                    .map(|vec| vec.borrow_mut())
+            })
     }
 
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-        self as &mut dyn Any
+    pub fn add_resource(&mut self, resource: impl Any) {
+        self.resources.add(resource);
+    }
+    pub fn get_resource<T: Any>(&self) -> Option<&T> {
+        self.resources.get_ref()
     }
 
-    fn push_none(&mut self) {
-        self.get_mut().push(None)
+    pub fn get_resource_mut<T: Any>(&mut self) -> Option<&mut T> {
+        self.resources.get_mut()
+    }
+
+    /// Removes a resource of type `T` from the world and returns it.
+    ///
+    /// # Arguments
+    /// * `self` - Mutable reference to the world
+    /// * `T` - The type of resource to remove
+    ///
+    /// # Returns
+    /// * `Some(T)` - The removed resource if it existed
+    /// * `None` - If no resource of type `T` was found
+    ///
+    /// # Example
+    /// ```
+    /// use pixels_engine::World;
+    /// let mut world = World::new();
+    /// world.add_resource(42_u32);
+    ///
+    /// // Remove the resource
+    /// let number = world.remove_resource::<u32>().unwrap();
+    /// assert_eq!(number, 42);
+    ///
+    /// // Resource is no longer in the world
+    /// assert!(world.remove_resource::<u32>().is_none());
+    /// ```
+    pub fn remove_resource<T: Any>(&mut self) -> Option<T> {
+        self.resources.remove::<T>()
     }
 }

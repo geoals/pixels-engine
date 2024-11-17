@@ -6,7 +6,7 @@ use image::RgbaImage;
 
 pub struct Sprite(pub Box<RgbaImage>);
 
-pub struct Position(pub Vec2);
+pub type Position = Vec2;
 
 pub struct Movement {
     pub speed: f32,
@@ -14,8 +14,8 @@ pub struct Movement {
     pub is_moving: bool,
 }
 
-impl Movement {
-    pub fn default() -> Self {
+impl Default for Movement {
+    fn default() -> Self {
         Self {
             speed: 256.0,
             direction: Direction::Down,

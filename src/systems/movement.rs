@@ -37,7 +37,7 @@ impl System for MovementSystem {
             if should_stop
                 && self.will_reach_next_tile_in_next_update(
                     delta_time,
-                    &position.0,
+                    position,
                     &movement.direction,
                     movement.speed,
                     movement.is_moving,
@@ -51,7 +51,7 @@ impl System for MovementSystem {
                 movement.is_moving = true;
             }
 
-            if !movement.is_moving || self.is_on_grid(&position.0) {
+            if !movement.is_moving || self.is_on_grid(position) {
                 match input.y() {
                     1 => {
                         movement.direction = Direction::Down;
@@ -73,12 +73,7 @@ impl System for MovementSystem {
             }
 
             if movement.is_moving {
-                self.apply_movement(
-                    delta_time,
-                    &mut position.0,
-                    &movement.direction,
-                    movement.speed,
-                );
+                self.apply_movement(delta_time, position, &movement.direction, movement.speed);
             }
         }
     }
@@ -86,8 +81,8 @@ impl System for MovementSystem {
 
 impl MovementSystem {
     fn snap_to_grid(&self, position: &mut Position) {
-        position.0.x = (position.0.x / TILE_SIZE as f32).round() * TILE_SIZE as f32;
-        position.0.y = (position.0.y / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+        position.x = (position.x / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+        position.y = (position.y / TILE_SIZE as f32).round() * TILE_SIZE as f32;
     }
 
     fn will_reach_next_tile_in_next_update(
@@ -104,8 +99,8 @@ impl MovementSystem {
 
         let current_tile = position.tile_coordinate();
         let movement_vector = direction.to_vector();
-        let movement_step = movement_vector.mul(speed * delta_time);
-        let next_position = position.add(movement_step);
+        let movement_step = movement_vector * speed * delta_time;
+        let next_position = *position + movement_step;
         let next_tile = next_position.tile_coordinate();
 
         current_tile != next_tile
@@ -119,7 +114,7 @@ impl MovementSystem {
         speed: f32,
     ) {
         let movement_vector = direction.to_vector();
-        let movement_step = movement_vector.mul(speed * delta_time);
+        let movement_step = movement_vector * speed * delta_time;
         position.x += movement_step.x;
         position.y += movement_step.y;
     }

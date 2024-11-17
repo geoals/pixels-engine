@@ -1,3 +1,5 @@
+use std::ops::{Add, Mul};
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec2 {
     pub x: f32,
@@ -11,20 +13,6 @@ impl Vec2 {
         Vec2 { x, y }
     }
 
-    pub fn add(self, other: Vec2) -> Vec2 {
-        Vec2 {
-            x: self.x + other.x,
-            y: self.y + other.y,
-        }
-    }
-
-    pub fn mul(self, scalar: f32) -> Vec2 {
-        Vec2 {
-            x: self.x * scalar,
-            y: self.y * scalar,
-        }
-    }
-
     pub fn normalize(self) -> Vec2 {
         let magnitude = (self.x.powi(2) + self.y.powi(2)).sqrt();
         if magnitude != 0.0 {
@@ -34,6 +22,28 @@ impl Vec2 {
             }
         } else {
             self
+        }
+    }
+}
+
+impl Add for Vec2 {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Vec2 {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
+
+impl Mul<f32> for Vec2 {
+    type Output = Self;
+
+    fn mul(self, scalar: f32) -> Self {
+        Vec2 {
+            x: self.x * scalar,
+            y: self.y * scalar,
         }
     }
 }

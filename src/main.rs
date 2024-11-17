@@ -1,31 +1,18 @@
 use std::thread;
 use std::time::{Duration, Instant};
 
-use crate::draw::draw_grid;
-use components::{Movement, Position, Sprite};
-use ecs::World;
 use pixels::{Error, Pixels, SurfaceTexture};
-use systems::movement::MovementSystem;
-use systems::render::RenderSystem;
-use vec2::Vec2;
+use pixels_engine::components::{Movement, Position, Sprite};
+use pixels_engine::draw::draw_grid;
+use pixels_engine::input::Input;
+use pixels_engine::systems::movement::MovementSystem;
+use pixels_engine::systems::render::RenderSystem;
+use pixels_engine::vec2::Vec2;
+use pixels_engine::{ecs, World, HEIGHT, TILE_SIZE, WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};
-
-use crate::input::Input;
-
-mod components;
-mod draw;
-mod ecs;
-mod input;
-mod movement_util;
-mod systems;
-mod vec2;
-
-pub const WIDTH: u32 = 640;
-pub const HEIGHT: u32 = 576;
-pub const TILE_SIZE: u32 = 64;
 
 struct Application {
     world: ecs::World,
@@ -49,7 +36,7 @@ impl Application {
         let image = image::open(image_path).unwrap();
         let player_sprite = Box::new(image.as_rgba8().unwrap().to_owned());
         world.add_component_to_entity(player, Sprite(player_sprite));
-        world.add_component_to_entity(player, Position(Vec2::ZERO));
+        world.add_component_to_entity(player, Position::ZERO);
         world.add_component_to_entity(player, Movement::default());
         world.add_system(RenderSystem);
         world.add_system(MovementSystem);

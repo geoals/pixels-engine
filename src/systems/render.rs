@@ -47,13 +47,13 @@ impl RenderSystem {
             let src_y = (i / image_width) as i32;
             // let src_y = (i / image_height) as i32;
 
-            let frame_offset = (((position.0.y.floor() as i32 + src_y) * WIDTH as i32
-                + (position.0.x.floor() as i32 + src_x))
+            let frame_offset = (((position.y.floor() as i32 + src_y) * WIDTH as i32
+                + (position.x.floor() as i32 + src_x))
                 * 4) as usize;
 
             if frame_offset > frame.len()
-                || position.0.x.floor() as i32 + src_x >= WIDTH as i32
-                || position.0.x.floor() as i32 + src_x < 0
+                || position.x.floor() as i32 + src_x >= WIDTH as i32
+                || position.x.floor() as i32 + src_x < 0
             {
                 continue;
             }
