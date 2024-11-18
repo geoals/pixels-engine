@@ -56,16 +56,16 @@ impl Spritesheet {
         target: &mut [u8],
         target_width: u32,
         target_height: u32,
-        dest_x: u32, // X position in target
-        dest_y: u32, // Y position in target
+        dest_x: i32, // X position in target
+        dest_y: i32, // Y position in target
     ) -> Option<()> {
         // TODO: don't get the sprite data every time
         let sprite_data = self.get_sprite(sprite_x, sprite_y)?;
         let scale = 4;
 
         for y in 0..self.sprite_height * scale {
-            let target_y = dest_y + y;
-            if target_y >= target_height {
+            let target_y = dest_y + y as i32;
+            if target_y >= target_height as i32 || target_y < 0 {
                 continue;
             }
 
@@ -73,8 +73,8 @@ impl Spritesheet {
             let sprite_y = y / scale;
 
             for x in 0..self.sprite_width * scale {
-                let target_x = dest_x + x;
-                if target_x >= target_width {
+                let target_x = dest_x + x as i32;
+                if target_x >= target_width as i32 || target_x < 0 {
                     continue;
                 }
 
@@ -82,7 +82,7 @@ impl Spritesheet {
                 let sprite_x = x / scale;
 
                 let sprite_idx = ((sprite_y * self.sprite_width + sprite_x) * 4) as usize;
-                let target_idx = ((target_y * target_width + target_x) * 4) as usize;
+                let target_idx = ((target_y * target_width as i32 + target_x) * 4) as usize;
 
                 // Only draw non-transparent pixels
                 if sprite_data[sprite_idx + 3] > 0 {

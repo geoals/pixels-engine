@@ -65,6 +65,15 @@ pub enum SpriteType {
 
 pub type Position = Vec2;
 
+impl Position {
+    pub fn at_tile(tile_x: i32, tile_y: i32) -> Self {
+        Self::new(
+            tile_x as f32 * crate::TILE_SIZE as f32,
+            tile_y as f32 * crate::TILE_SIZE as f32,
+        )
+    }
+}
+
 #[derive(Default)]
 pub struct Movement {
     pub speed: f32,

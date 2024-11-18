@@ -3,12 +3,11 @@ use std::time::{Duration, Instant};
 
 use pixels::{Error, Pixels, SurfaceTexture};
 use pixels_engine::components::{AnimatedSprite, Movement, Position, SpriteType};
-use pixels_engine::draw::draw_grid;
 use pixels_engine::input::Input;
 use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
 use pixels_engine::systems::animation::AnimationSystem;
 use pixels_engine::systems::movement::MovementSystem;
-use pixels_engine::systems::render::SpriteRenderSystem;
+use pixels_engine::systems::render::{DebugGridSystem, SpriteRenderSystem};
 use pixels_engine::vec2::Vec2;
 use pixels_engine::{ecs, World, HEIGHT, TILE_SIZE, WIDTH};
 use winit::dpi::LogicalSize;
@@ -41,8 +40,9 @@ impl Application {
 
         world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
 
-        world.add_component_to_entity(player, Position::ZERO);
+        world.add_component_to_entity(player, Position::at_tile(4, 4));
         world.add_component_to_entity(player, Movement::new(192.0));
+        world.add_system(DebugGridSystem);
         world.add_system(SpriteRenderSystem);
         world.add_system(MovementSystem);
         world.add_system(AnimationSystem);
@@ -62,7 +62,6 @@ impl Application {
     }
 
     fn draw(&mut self) {
-        draw_grid(self.pixels().frame_mut()); // if debug
         self.pixels.render().unwrap();
     }
 

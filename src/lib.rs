@@ -1,5 +1,4 @@
 pub mod components;
-pub mod draw;
 pub mod ecs;
 pub mod input;
 pub mod movement_util;
