@@ -24,8 +24,7 @@ impl System for AnimationSystem {
                 sprite_components[i].as_mut(),
                 movement_components[i].as_ref(),
             ) {
-                // BUG: letting go of input should not stop animation immediately, let two frames
-                // play
+                // BUG: letting go of input should not stop animation immediately, let two frames play
                 if movement.is_moving || input.x() != 0 || input.y() != 0 {
                     sprite.frame_time += delta_time.as_secs_f32();
                     if sprite.frame_time >= FRAME_DURATION {

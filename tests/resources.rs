@@ -9,11 +9,11 @@ fn create_and_get_resource_immutably() {
 
 #[test]
 fn create_and_get_resource_mutably() {
-    let mut world = initialize_world();
+    let world = initialize_world();
 
     // Modify the FPS
     {
-        let fps = world.get_resource_mut::<FpsResource>().unwrap();
+        let mut fps = world.get_resource_mut::<FpsResource>().unwrap();
         fps.0 = 60;
     }
 
@@ -59,6 +59,16 @@ fn remove_and_read_resource() {
     // Verify new resource
     let fps = world.get_resource::<FpsResource>().unwrap();
     assert_eq!(fps.0, 60);
+}
+
+#[test]
+fn add_two_entities_with_components() {
+    let mut world = initialize_world();
+    let entity1 = world.new_entity();
+    world.add_component_to_entity(entity1, 10.0);
+
+    let entity2 = world.new_entity();
+    world.add_component_to_entity(entity2, true)
 }
 
 fn initialize_world() -> World {

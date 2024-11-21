@@ -15,7 +15,8 @@ use super::System;
 
 pub struct MovementSystem;
 
-const MOVEMENT_DELAY: f32 = 0.1;
+// const MOVEMENT_DELAY: f32 = 0.1;
+const MOVEMENT_DELAY: f32 = 0.0;
 
 // Simplify prop passing
 struct MovementContext<'a> {

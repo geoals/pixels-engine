@@ -51,46 +51,32 @@ impl Spritesheet {
     #[allow(clippy::too_many_arguments)]
     pub fn draw_sprite_to_buffer(
         &self,
-        sprite_x: u32, // X position in spritesheet
-        sprite_y: u32, // Y position in spritesheet
+        sprite_data: &[u8],
         target: &mut [u8],
         target_width: u32,
         target_height: u32,
-        dest_x: i32, // X position in target
-        dest_y: i32, // Y position in target
-    ) -> Option<()> {
-        // TODO: don't get the sprite data every time
-        let sprite_data = self.get_sprite(sprite_x, sprite_y)?;
-        let scale = 4;
-
-        for y in 0..self.sprite_height * scale {
+        dest_x: i32,
+        dest_y: i32,
+    ) {
+        for y in 0..self.sprite_height {
             let target_y = dest_y + y as i32;
             if target_y >= target_height as i32 || target_y < 0 {
                 continue;
             }
 
-            // Calculate which row of the original sprite we're on
-            let sprite_y = y / scale;
-
-            for x in 0..self.sprite_width * scale {
+            for x in 0..self.sprite_width {
                 let target_x = dest_x + x as i32;
                 if target_x >= target_width as i32 || target_x < 0 {
                     continue;
                 }
 
-                // Calculate which column of the original sprite we're on
-                let sprite_x = x / scale;
-
-                let sprite_idx = ((sprite_y * self.sprite_width + sprite_x) * 4) as usize;
-                let target_idx = ((target_y * target_width as i32 + target_x) * 4) as usize;
-
-                // Only draw non-transparent pixels
+                let sprite_idx = ((y * self.sprite_width + x) * 4) as usize;
                 if sprite_data[sprite_idx + 3] > 0 {
+                    let target_idx = ((target_y * target_width as i32 + target_x) * 4) as usize;
                     target[target_idx..target_idx + 4]
                         .copy_from_slice(&sprite_data[sprite_idx..sprite_idx + 4]);
                 }
             }
         }
-        Some(())
     }
 }

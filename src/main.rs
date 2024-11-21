@@ -2,14 +2,17 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use pixels::{Error, Pixels, SurfaceTexture};
-use pixels_engine::components::{AnimatedSprite, Movement, Position, SpriteType};
+use pixels_engine::camera::Camera;
+use pixels_engine::components::{AnimatedSprite, Movement, Player, Position, SpriteType};
+use pixels_engine::fps_counter::FpsCounter;
 use pixels_engine::input::Input;
 use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
 use pixels_engine::systems::animation::AnimationSystem;
+use pixels_engine::systems::camera::CameraFollowSystem;
+use pixels_engine::systems::debug_grid::DebugGridSystem;
 use pixels_engine::systems::movement::MovementSystem;
-use pixels_engine::systems::render::{DebugGridSystem, SpriteRenderSystem};
-use pixels_engine::vec2::Vec2;
-use pixels_engine::{ecs, World, HEIGHT, TILE_SIZE, WIDTH};
+use pixels_engine::systems::sprite_render::SpriteRenderSystem;
+use pixels_engine::{ecs, World, HEIGHT, SCALE_FACTOR, WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -24,28 +27,49 @@ struct Application {
 
 impl Application {
     fn new(window: &Window) -> Self {
-        let pixels = {
+        let mut pixels = {
             let size = window.inner_size();
-            let surface_texture = SurfaceTexture::new(size.width, size.height, &window);
-            Pixels::new(size.width, size.height, surface_texture).unwrap()
+            let surface_texture = SurfaceTexture::new(
+                size.width / SCALE_FACTOR,
+                size.height / SCALE_FACTOR,
+                &window,
+            );
+            Pixels::new(
+                size.width / SCALE_FACTOR,
+                size.height / SCALE_FACTOR,
+                surface_texture,
+            )
+            .unwrap()
         };
+        pixels.enable_vsync(false);
 
         let mut world = World::new();
 
         world.add_resource(CharacterSpritesheet(
             Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
         ));
+        world.add_resource(Camera::new(WIDTH, HEIGHT));
+
+        for y in 0..15 {
+            for x in 0..20 {
+                let entity = world.new_entity();
+                world.add_component_to_entity(entity, AnimatedSprite::new(SpriteType::Player));
+                world.add_component_to_entity(entity, Position::at_tile(x, y));
+            }
+        }
 
         let player = world.new_entity();
 
         world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
-
         world.add_component_to_entity(player, Position::at_tile(4, 4));
-        world.add_component_to_entity(player, Movement::new(192.0));
-        world.add_system(DebugGridSystem);
-        world.add_system(SpriteRenderSystem);
+        world.add_component_to_entity(player, Movement::new(48.0));
+        world.add_component_to_entity(player, Player);
+
         world.add_system(MovementSystem);
         world.add_system(AnimationSystem);
+        world.add_system(CameraFollowSystem);
+        world.add_system(DebugGridSystem);
+        world.add_system(SpriteRenderSystem);
 
         Self {
             world,
@@ -78,28 +102,15 @@ impl Application {
     }
 }
 
-struct Obstruction {
-    position: Vec2,
-    size: i32,
-}
-
-impl Obstruction {
-    fn new(grid_x: u32, grid_y: u32, size: i32) -> Self {
-        Self {
-            position: Vec2::new(
-                grid_x as f32 * TILE_SIZE as f32,
-                grid_y as f32 * TILE_SIZE as f32,
-            ),
-            size,
-        }
-    }
-}
-
 fn main() -> Result<(), Error> {
     env_logger::init();
     let event_loop = EventLoop::new();
     let window = {
-        let size = LogicalSize::new(WIDTH as f64, HEIGHT as f64);
+        let size = LogicalSize::new(
+            (WIDTH * SCALE_FACTOR) as f64,
+            (HEIGHT * SCALE_FACTOR) as f64,
+        );
+
         WindowBuilder::new()
             .with_title("PixelsEngine")
             .with_inner_size(size)
@@ -110,10 +121,7 @@ fn main() -> Result<(), Error> {
 
     let mut world = Application::new(&window);
 
-    // Define the target FPS and calculate the desired frame interval
-    let target_fps = 30;
-    let frame_interval = Duration::from_micros(1_000_000 / target_fps);
-    let mut last_time_for_fps_print = Instant::now();
+    let mut fps_counter = FpsCounter::new(240);
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !world.input.process_events(&event) => match event {
@@ -133,20 +141,9 @@ fn main() -> Result<(), Error> {
             world.update();
             world.draw();
 
-            let end_time = Instant::now();
-            let elapsed_time = end_time - start_time;
-            let sleep_time = if elapsed_time < frame_interval {
-                frame_interval - elapsed_time
-            } else {
-                Duration::ZERO
-            };
-
-            last_time_for_fps_print += elapsed_time;
-
-            if last_time_for_fps_print.elapsed().as_millis() > 500 {
-                dbg!(world.delta_time);
-                last_time_for_fps_print = Instant::now();
-            }
+            let elapsed_time = start_time.elapsed();
+            let sleep_time = fps_counter.calculate_sleep_time(elapsed_time);
+            fps_counter.update_and_print(elapsed_time + sleep_time);
 
             thread::sleep(sleep_time);
             world.delta_time = elapsed_time + sleep_time;

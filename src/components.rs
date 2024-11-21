@@ -103,3 +103,5 @@ impl Movement {
         }
     }
 }
+
+pub struct Player;
