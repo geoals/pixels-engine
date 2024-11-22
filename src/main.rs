@@ -50,7 +50,7 @@ impl Application {
         ));
         world.add_resource(Camera::new(WIDTH, HEIGHT));
 
-        for y in 0..15 {
+        for y in 0..150 {
             for x in 0..20 {
                 let entity = world.new_entity();
                 world.add_component_to_entity(entity, AnimatedSprite::new(SpriteType::Player));
@@ -95,9 +95,8 @@ impl Application {
 
     /// Clear the screen
     fn clear(&mut self) {
-        for (i, byte) in self.pixels.frame_mut().iter_mut().enumerate() {
-            // *byte = 0;
-            *byte = if i % 4 == 3 { 255 } else { 0 };
+        for byte in self.pixels.frame_mut().iter_mut() {
+            *byte = 0;
         }
     }
 }
@@ -121,7 +120,7 @@ fn main() -> Result<(), Error> {
 
     let mut world = Application::new(&window);
 
-    let mut fps_counter = FpsCounter::new(240);
+    let mut fps_counter = FpsCounter::new(2000);
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !world.input.process_events(&event) => match event {

@@ -59,6 +59,10 @@ impl SpriteRenderSystem {
         frame: &mut [u8],
         input: &Input,
     ) {
+        if !camera.is_visible(*position) {
+            return;
+        }
+
         let sheet = match sprite.sprite_type {
             SpriteType::Player => spritesheet,
         };
@@ -77,7 +81,6 @@ impl SpriteRenderSystem {
         let screen_pos = camera.world_to_screen(*position);
 
         let sprite_data = sheet.0.get_sprite(sprite_x, sprite_y).unwrap();
-        // let render_start = Instant::now();
         sheet.0.draw_sprite_to_buffer(
             &sprite_data,
             frame,
@@ -86,9 +89,5 @@ impl SpriteRenderSystem {
             screen_pos.x as i32,
             (screen_pos.y + vertical_offset) as i32,
         );
-        // println!(
-        //     "Rendering a single sprite took: {:?}",
-        //     render_start.elapsed()
-        // );
     }
 }
