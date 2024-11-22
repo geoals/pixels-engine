@@ -1,4 +1,4 @@
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use pixels::Pixels;
 
@@ -21,7 +21,7 @@ const SCALE: f32 = 1.0;
 impl System for SpriteRenderSystem {
     fn update(&self, world: &World, pixels: &mut Pixels, input: &Input, _delta_time: Duration) {
         let camera = world.get_resource::<Camera>().unwrap();
-        let spritesheet = world.get_resource::<CharacterSpritesheet>().unwrap();
+        let mut spritesheet = world.get_resource_mut::<CharacterSpritesheet>().unwrap();
 
         let sprite_components = world.borrow_components_mut::<AnimatedSprite>().unwrap();
         let position_components = world.borrow_components_mut::<Position>().unwrap();
@@ -38,7 +38,7 @@ impl System for SpriteRenderSystem {
                     position,
                     movement,
                     &camera,
-                    &spritesheet,
+                    &mut spritesheet,
                     frame,
                     input,
                 );
@@ -55,7 +55,7 @@ impl SpriteRenderSystem {
         position: &Position,
         movement: Option<&Movement>,
         camera: &Camera,
-        spritesheet: &CharacterSpritesheet,
+        spritesheet: &mut CharacterSpritesheet,
         frame: &mut [u8],
         input: &Input,
     ) {
@@ -80,9 +80,9 @@ impl SpriteRenderSystem {
         let (sprite_x, sprite_y) = sprite.get_current_frame(direction, is_moving);
         let screen_pos = camera.world_to_screen(*position);
 
-        let sprite_data = sheet.0.get_sprite(sprite_x, sprite_y).unwrap();
         sheet.0.draw_sprite_to_buffer(
-            &sprite_data,
+            sprite_x,
+            sprite_y,
             frame,
             WIDTH,
             HEIGHT,
