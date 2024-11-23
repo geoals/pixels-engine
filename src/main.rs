@@ -120,7 +120,7 @@ fn main() -> Result<(), Error> {
 
     let mut world = Application::new(&window);
 
-    let mut fps_counter = FpsCounter::new(2000);
+    let mut fps_counter = FpsCounter::new(200000);
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !world.input.process_events(&event) => match event {

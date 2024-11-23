@@ -16,8 +16,6 @@ use super::System;
 
 pub struct SpriteRenderSystem;
 
-const SCALE: f32 = 1.0;
-
 impl System for SpriteRenderSystem {
     fn update(&self, world: &World, pixels: &mut Pixels, input: &Input, _delta_time: Duration) {
         let camera = world.get_resource::<Camera>().unwrap();
@@ -76,7 +74,7 @@ impl SpriteRenderSystem {
             (&Direction::Down, false)
         };
 
-        let vertical_offset = -4.0 * SCALE;
+        let vertical_offset = -4.0;
         let (sprite_x, sprite_y) = sprite.get_current_frame(direction, is_moving);
         let screen_pos = camera.world_to_screen(*position);
 
@@ -84,8 +82,6 @@ impl SpriteRenderSystem {
             sprite_x,
             sprite_y,
             frame,
-            WIDTH,
-            HEIGHT,
             screen_pos.x as i32,
             (screen_pos.y + vertical_offset) as i32,
         );
