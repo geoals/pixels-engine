@@ -7,6 +7,7 @@ pub mod movement_util;
 pub mod resource;
 pub mod spritesheet;
 pub mod systems;
+pub mod tile;
 pub mod vec2;
 
 pub use ecs::World;

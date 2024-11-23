@@ -12,6 +12,8 @@ use pixels_engine::systems::camera::CameraFollowSystem;
 use pixels_engine::systems::debug_grid::DebugGridSystem;
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
+use pixels_engine::systems::tile_render::TileRenderSystem;
+use pixels_engine::tile::TileMap;
 use pixels_engine::{ecs, World, HEIGHT, SCALE_FACTOR, WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
@@ -48,20 +50,14 @@ impl Application {
         world.add_resource(CharacterSpritesheet(
             Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
         ));
+        let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
+        world.add_resource(tilemap);
         world.add_resource(Camera::new(WIDTH, HEIGHT));
-
-        for y in 0..150 {
-            for x in 0..20 {
-                let entity = world.new_entity();
-                world.add_component_to_entity(entity, AnimatedSprite::new(SpriteType::Player));
-                world.add_component_to_entity(entity, Position::at_tile(x, y));
-            }
-        }
 
         let player = world.new_entity();
 
         world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
-        world.add_component_to_entity(player, Position::at_tile(4, 4));
+        world.add_component_to_entity(player, Position::at_tile(0, 0));
         world.add_component_to_entity(player, Movement::new(48.0));
         world.add_component_to_entity(player, Player);
 
@@ -69,6 +65,7 @@ impl Application {
         world.add_system(AnimationSystem);
         world.add_system(CameraFollowSystem);
         world.add_system(DebugGridSystem);
+        world.add_system(TileRenderSystem);
         world.add_system(SpriteRenderSystem);
 
         Self {
