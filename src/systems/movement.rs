@@ -7,6 +7,7 @@ use crate::{
     ecs::World,
     input::Input,
     movement_util::{Direction, PositionExt},
+    tile::{TileData, TileMap},
     vec2::Vec2,
     TILE_SIZE,
 };
@@ -22,12 +23,14 @@ const MOVEMENT_DELAY: f32 = 0.0;
 struct MovementContext<'a> {
     position: &'a mut Position,
     movement: &'a mut Movement,
+    tilemap: &'a TileMap,
     delta_time: f32,
     input: &'a Input,
 }
 
 impl System for MovementSystem {
     fn update(&self, world: &World, _pixels: &mut Pixels, input: &Input, delta_time: Duration) {
+        let tilemap = &world.get_resource::<TileMap>().unwrap();
         let mut movement_components = world.borrow_components_mut::<Movement>().unwrap();
         let mut position_components = world.borrow_components_mut::<Position>().unwrap();
         let zip = movement_components
@@ -42,6 +45,7 @@ impl System for MovementSystem {
             let mut ctx = MovementContext {
                 position,
                 movement,
+                tilemap,
                 delta_time,
                 input,
             };
@@ -52,10 +56,6 @@ impl System for MovementSystem {
 
 impl MovementSystem {
     fn handle_movement(&self, ctx: &mut MovementContext) {
-        if ctx.movement.is_moving {
-            self.apply_movement(ctx);
-        }
-
         if ctx.movement.input_not_in_same_direction(ctx.input)
             && self.will_reach_next_tile_in_next_update(ctx)
         {
@@ -76,23 +76,76 @@ impl MovementSystem {
             ctx.movement.initial_direction = ctx.movement.direction;
         }
 
-        let Some(input_direction) = Direction::from_vector(ctx.input.vector()) else {
-            return;
+        if let Some(input_direction) = Direction::from_vector(ctx.input.vector()) {
+            // No delay if input matches initial direction
+            if ctx.movement.initial_direction == input_direction
+                || ctx.movement.start_delay >= MOVEMENT_DELAY
+            {
+                ctx.movement.is_moving = true;
+            } else {
+                // Apply start delay
+                ctx.movement.start_delay += ctx.delta_time;
+            }
+
+            // Changing directions
+            if self.is_on_grid(ctx.position) {
+                ctx.movement.direction = input_direction;
+            }
         };
 
-        // No delay if input matches initial direction
-        if ctx.movement.initial_direction == input_direction
-            || ctx.movement.start_delay >= MOVEMENT_DELAY
-        {
-            ctx.movement.is_moving = true;
+        // collision start
+        // Get current tile position, adjusting for movement direction
+        let tile_pos = match ctx.movement.direction {
+            Direction::Up | Direction::Left => {
+                // For up/left movement, round up to the next tile if we're more than halfway
+                let x = if ctx.movement.direction == Direction::Left {
+                    ((ctx.position.x + (TILE_SIZE as f32 * 0.5)) / TILE_SIZE as f32).floor() as i64
+                } else {
+                    (ctx.position.x / TILE_SIZE as f32).floor() as i64
+                };
+
+                let y = if ctx.movement.direction == Direction::Up {
+                    ((ctx.position.y + (TILE_SIZE as f32 * 0.5)) / TILE_SIZE as f32).floor() as i64
+                } else {
+                    (ctx.position.y / TILE_SIZE as f32).floor() as i64
+                };
+
+                (x, y)
+            }
+            Direction::Down | Direction::Right => {
+                // For down/right movement, use normal floor division
+                (
+                    (ctx.position.x / TILE_SIZE as f32).floor() as i64,
+                    (ctx.position.y / TILE_SIZE as f32).floor() as i64,
+                )
+            }
+        };
+
+        // Calculate target tile based on movement direction
+        let (target_tile_x, target_tile_y) = match ctx.movement.direction {
+            Direction::Up => (tile_pos.0, tile_pos.1 - 1),
+            Direction::Down => (tile_pos.0, tile_pos.1 + 1),
+            Direction::Left => (tile_pos.0 - 1, tile_pos.1),
+            Direction::Right => (tile_pos.0 + 1, tile_pos.1),
+        };
+
+        // Check if the target tile exists and is traversable
+        let can_move = if let Some(tile) = ctx.tilemap.tiles.get(&(target_tile_x, target_tile_y)) {
+            tile.traversable
         } else {
-            // Apply start delay
-            ctx.movement.start_delay += ctx.delta_time;
+            false
+        };
+        // collision end
+
+        if !can_move {
+            // If we can't move, stop movement and snap back to the last valid tile
+            ctx.movement.is_moving = false;
+            self.snap_to_grid(ctx.position);
+            return;
         }
 
-        // Changing directions
-        if self.is_on_grid(ctx.position) {
-            ctx.movement.direction = input_direction;
+        if ctx.movement.is_moving {
+            self.apply_movement(ctx);
         }
     }
 

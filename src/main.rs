@@ -9,12 +9,13 @@ use pixels_engine::input::Input;
 use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
 use pixels_engine::systems::animation::AnimationSystem;
 use pixels_engine::systems::camera::CameraFollowSystem;
+use pixels_engine::systems::collision::CollisionSystem;
 use pixels_engine::systems::debug_grid::DebugGridSystem;
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
 use pixels_engine::tile::TileMap;
-use pixels_engine::{ecs, World, HEIGHT, SCALE_FACTOR, WIDTH};
+use pixels_engine::{ecs, World, SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -52,16 +53,17 @@ impl Application {
         ));
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
         world.add_resource(tilemap);
-        world.add_resource(Camera::new(WIDTH, HEIGHT));
+        world.add_resource(Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT));
 
         let player = world.new_entity();
 
         world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
-        world.add_component_to_entity(player, Position::at_tile(0, 0));
+        world.add_component_to_entity(player, Position::at_tile(20, 10));
         world.add_component_to_entity(player, Movement::new(48.0));
         world.add_component_to_entity(player, Player);
 
         world.add_system(MovementSystem);
+        // world.add_system(CollisionSystem);
         world.add_system(AnimationSystem);
         world.add_system(CameraFollowSystem);
         world.add_system(DebugGridSystem);
@@ -103,8 +105,8 @@ fn main() -> Result<(), Error> {
     let event_loop = EventLoop::new();
     let window = {
         let size = LogicalSize::new(
-            (WIDTH * SCALE_FACTOR) as f64,
-            (HEIGHT * SCALE_FACTOR) as f64,
+            (SCREEN_WIDTH * SCALE_FACTOR) as f64,
+            (SCREEN_HEIGHT * SCALE_FACTOR) as f64,
         );
 
         WindowBuilder::new()

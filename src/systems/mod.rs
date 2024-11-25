@@ -6,6 +6,7 @@ use crate::{ecs::World, input::Input};
 
 pub mod animation;
 pub mod camera;
+pub mod collision;
 pub mod debug_grid;
 pub mod movement;
 pub mod sprite_render;

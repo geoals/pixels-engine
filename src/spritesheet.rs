@@ -2,7 +2,7 @@ use std::{collections::HashMap, path::Path};
 
 use image::{DynamicImage, GenericImageView};
 
-use crate::{HEIGHT, WIDTH};
+use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 pub struct CharacterSpritesheet(pub Spritesheet);
 
@@ -79,21 +79,21 @@ impl Spritesheet {
 
         for y in 0..sprite_height {
             let target_y = dest_y + y as i32;
-            if target_y >= HEIGHT as i32 || target_y < 0 {
+            if target_y >= SCREEN_HEIGHT as i32 || target_y < 0 {
                 continue;
             }
 
             // TODO: different method for fully opaque sprites should not iterate over rows
             for x in 0..sprite_width {
                 let target_x = dest_x + x as i32;
-                if target_x >= WIDTH as i32 || target_x < 0 {
+                if target_x >= SCREEN_WIDTH as i32 || target_x < 0 {
                     continue;
                 }
 
                 let sprite_idx = ((y * sprite_width + x) * 4) as usize;
                 // Skip fully transparent pixels
                 if sprite_data[sprite_idx + 3] > 0 {
-                    let target_idx = ((target_y * WIDTH as i32 + target_x) * 4) as usize;
+                    let target_idx = ((target_y * SCREEN_WIDTH as i32 + target_x) * 4) as usize;
                     target[target_idx..target_idx + 4]
                         .copy_from_slice(&sprite_data[sprite_idx..sprite_idx + 4]);
                 }

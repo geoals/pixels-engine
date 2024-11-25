@@ -12,7 +12,7 @@ pub mod vec2;
 
 pub use ecs::World;
 
-pub const WIDTH: u32 = 160;
-pub const HEIGHT: u32 = 144;
+pub const SCREEN_WIDTH: u32 = 160;
+pub const SCREEN_HEIGHT: u32 = 144;
 pub const TILE_SIZE: u32 = 16;
 pub const SCALE_FACTOR: u32 = 4;

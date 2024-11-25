@@ -9,7 +9,7 @@ use crate::{
     input::Input,
     movement_util::Direction,
     spritesheet::CharacterSpritesheet,
-    HEIGHT, WIDTH,
+    SCREEN_HEIGHT, SCREEN_WIDTH,
 };
 
 use super::System;

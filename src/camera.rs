@@ -34,8 +34,7 @@ impl Camera {
             self.viewport_width as f32 / 2.0,
             self.viewport_height as f32 / 2.0,
         );
-        let offset = world_pos - self.position;
-        screen_center + offset
+        world_pos - self.position + screen_center
     }
 
     /// Convert screen coordinates to world coordinates

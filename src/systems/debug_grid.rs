@@ -3,9 +3,9 @@ use crate::camera::Camera;
 use crate::ecs::World;
 use crate::input::Input;
 use crate::vec2::Vec2;
-use crate::HEIGHT;
+use crate::SCREEN_HEIGHT;
+use crate::SCREEN_WIDTH;
 use crate::TILE_SIZE;
-use crate::WIDTH;
 use pixels::Pixels;
 use std::time::Duration;
 
@@ -18,7 +18,8 @@ impl System for DebugGridSystem {
 
         // Calculate visible grid range
         let top_left = camera.screen_to_world(Vec2::ZERO);
-        let bottom_right = camera.screen_to_world(Vec2::new(WIDTH as f32, HEIGHT as f32));
+        let bottom_right =
+            camera.screen_to_world(Vec2::new(SCREEN_WIDTH as f32, SCREEN_HEIGHT as f32));
 
         // Extend the range by one tile to ensure smooth scrolling
         let start_x = ((top_left.x / TILE_SIZE as f32).floor() - 1.0) as i32;
@@ -32,9 +33,9 @@ impl System for DebugGridSystem {
             let screen_pos = camera.world_to_screen(world_pos);
             let y = screen_pos.y as i32;
 
-            if y >= 0 && y < HEIGHT as i32 {
-                for x in 0..WIDTH {
-                    let i = (4 * x + y as u32 * WIDTH * 4) as usize;
+            if y >= 0 && y < SCREEN_HEIGHT as i32 {
+                for x in 0..SCREEN_WIDTH {
+                    let i = (4 * x + y as u32 * SCREEN_WIDTH * 4) as usize;
                     frame[i] = 255; // R
                     frame[i + 1] = 255; // G
                     frame[i + 2] = 255; // B
@@ -49,9 +50,9 @@ impl System for DebugGridSystem {
             let screen_pos = camera.world_to_screen(world_pos);
             let x = screen_pos.x as i32;
 
-            if x >= 0 && x < WIDTH as i32 {
-                for y in 0..HEIGHT {
-                    let i = (4 * x as u32 + y * WIDTH * 4) as usize;
+            if x >= 0 && x < SCREEN_WIDTH as i32 {
+                for y in 0..SCREEN_HEIGHT {
+                    let i = (4 * x as u32 + y * SCREEN_WIDTH * 4) as usize;
                     frame[i] = 255; // R
                     frame[i + 1] = 255; // G
                     frame[i + 2] = 255; // B

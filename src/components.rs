@@ -72,6 +72,13 @@ impl Position {
             tile_y as f32 * crate::TILE_SIZE as f32,
         )
     }
+
+    pub fn tile(&self) -> (i64, i64) {
+        (
+            (self.x / crate::TILE_SIZE as f32) as i64,
+            (self.y / crate::TILE_SIZE as f32) as i64,
+        )
+    }
 }
 
 #[derive(Default)]
