@@ -4,6 +4,7 @@ use crate::{
     camera::Camera,
     input::Input,
     tile::{TileData, TileMap},
+    vec2::Vec2,
     World, SCREEN_HEIGHT, SCREEN_WIDTH,
 };
 
@@ -20,12 +21,10 @@ impl System for TileRenderSystem {
         _delta_time: Duration,
     ) {
         let camera = world.get_resource::<Camera>().unwrap();
-        let get_resource = world.get_resource::<TileMap>();
-        let tilemap = get_resource.unwrap();
+        let tilemap = world.get_resource::<TileMap>().unwrap();
 
         let frame = pixels.frame_mut();
 
-        // Calculate the camera's top-left position by subtracting half screen dimensions
         let camera_left = camera.position().x - (SCREEN_WIDTH as f32 / 2.0);
         let camera_top = camera.position().y - (SCREEN_HEIGHT as f32 / 2.0);
 
@@ -41,12 +40,14 @@ impl System for TileRenderSystem {
                 let Some(tile) = tilemap.tiles.get(&(x, y)) else {
                     continue;
                 };
-                // Convert world position to screen position using camera
-                // TODO : use camera.world_to_screen ??
-                let screen_x =
-                    (tile.world_x as f32 - camera.position().x) + (SCREEN_WIDTH as f32 / 2.0);
-                let screen_y =
-                    (tile.world_y as f32 - camera.position().y) + (SCREEN_HEIGHT as f32 / 2.0);
+
+                let world_pos = Vec2::new(tile.world_x as f32, tile.world_y as f32);
+                let screen_pos = camera.world_to_screen(world_pos);
+
+                // Round to prevent subpixel positioning
+                // This is required to prevent off by one pixel jitter when moving up or left
+                let screen_x = screen_pos.x.round() as i32;
+                let screen_y = screen_pos.y.round() as i32;
 
                 draw_tile(
                     frame,
@@ -54,13 +55,13 @@ impl System for TileRenderSystem {
                     tilemap.tileset_width,
                     tile,
                     tilemap.tilesize,
-                    screen_x as i32,
-                    screen_y as i32,
+                    screen_x,
+                    screen_y,
                 );
 
-                if !tile.traversable {
-                    draw_debug_overlay(frame, screen_x as i32, screen_y as i32, tilemap.tilesize);
-                }
+                // if !tile.traversable {
+                //     draw_debug_overlay(frame, screen_x, screen_y, tilemap.tilesize);
+                // }
             }
         }
     }
