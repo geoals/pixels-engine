@@ -25,10 +25,12 @@ impl FpsCounter {
             let min_time = self.frame_times.iter().min().unwrap();
             let fps = 1.0 / avg_time.as_secs_f32();
 
-            println!("FPS Stats:");
-            println!("  Average: {:.1} fps ({:?}/frame)", fps, avg_time);
-            println!("  Min time: {:?}", min_time);
-            println!("  Max time: {:?}", max_time);
+            if cfg!(feature = "fps") {
+                println!("FPS Stats:");
+                println!("  Average: {:.1} fps ({:?}/frame)", fps, avg_time);
+                println!("  Min time: {:?}", min_time);
+                println!("  Max time: {:?}", max_time);
+            }
 
             self.last_print = Instant::now();
             self.frame_times.clear();

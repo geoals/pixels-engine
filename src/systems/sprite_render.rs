@@ -9,7 +9,6 @@ use crate::{
     input::Input,
     movement_util::Direction,
     spritesheet::CharacterSpritesheet,
-    SCREEN_HEIGHT, SCREEN_WIDTH,
 };
 
 use super::System;
@@ -82,8 +81,8 @@ impl SpriteRenderSystem {
             sprite_x,
             sprite_y,
             frame,
-            screen_pos.x as i32,
-            (screen_pos.y + vertical_offset) as i32,
+            screen_pos.x.round() as i32,
+            (screen_pos.y + vertical_offset).round() as i32,
         );
     }
 }

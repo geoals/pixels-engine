@@ -44,7 +44,7 @@ impl Application {
             )
             .unwrap()
         };
-        pixels.enable_vsync(false);
+        pixels.enable_vsync(true);
 
         let mut world = World::new();
 
@@ -52,13 +52,18 @@ impl Application {
             Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
         ));
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
+        let player_starting_position = tilemap.player_starting_position;
         world.add_resource(tilemap);
         world.add_resource(Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT));
 
         let player = world.new_entity();
 
         world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
-        world.add_component_to_entity(player, Position::at_tile(20, 10));
+        world.add_component_to_entity(
+            player,
+            Position::new(player_starting_position.x, player_starting_position.y),
+        );
+
         world.add_component_to_entity(player, Movement::new(48.0));
         world.add_component_to_entity(player, Player);
 
@@ -66,7 +71,9 @@ impl Application {
         // world.add_system(CollisionSystem);
         world.add_system(AnimationSystem);
         world.add_system(CameraFollowSystem);
-        world.add_system(DebugGridSystem);
+        if cfg!(feature = "debug") {
+            world.add_system(DebugGridSystem);
+        }
         world.add_system(TileRenderSystem);
         world.add_system(SpriteRenderSystem);
 
@@ -119,7 +126,7 @@ fn main() -> Result<(), Error> {
 
     let mut world = Application::new(&window);
 
-    let mut fps_counter = FpsCounter::new(200000);
+    let mut fps_counter = FpsCounter::new(240);
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !world.input.process_events(&event) => match event {

@@ -64,7 +64,6 @@ impl Spritesheet {
     /// * `target` - The pixel buffer to draw the sprite to
     /// * `dest_x` - The x position in the buffer to draw the sprite to
     /// * `dest_y` - The y position in the buffer to draw the sprite to
-    #[allow(clippy::too_many_arguments)]
     pub fn draw_sprite_to_buffer(
         &mut self,
         sprite_x: u32,

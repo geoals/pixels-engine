@@ -7,7 +7,6 @@ use crate::{
     input::Input,
     movement_util::Direction,
     tile::TileMap,
-    TILE_SIZE,
 };
 
 use super::System;
@@ -31,7 +30,6 @@ impl System for CollisionSystem {
                 continue;
             }
 
-            // Get current tile position
             let current_tile = position.tile();
 
             // Calculate target tile based on movement direction
@@ -41,8 +39,6 @@ impl System for CollisionSystem {
                 Direction::Left => (current_tile.0 - 1, current_tile.1),
                 Direction::Right => (current_tile.0 + 1, current_tile.1),
             };
-            dbg!(current_tile);
-            dbg!(target_tile_x, target_tile_y);
 
             // Check if the target tile exists and is traversable
             let can_move = if let Some(tile) = tilemap.tiles.get(&(target_tile_x, target_tile_y)) {
@@ -60,7 +56,7 @@ impl System for CollisionSystem {
     }
 }
 impl CollisionSystem {
-    fn snap_to_grid(&self, position: &mut Position, tilesize: u32) {
+    fn snap_to_grid(&self, position: &mut Position, tilesize: i64) {
         position.x = (position.x / tilesize as f32).round() * tilesize as f32;
         position.y = (position.y / tilesize as f32).round() * tilesize as f32;
     }

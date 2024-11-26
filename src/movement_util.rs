@@ -2,13 +2,13 @@ use crate::vec2::Vec2;
 use crate::TILE_SIZE;
 
 pub trait PositionExt {
-    fn tile_coordinate(&self) -> (i32, i32);
+    fn tile_coordinate(&self) -> (i64, i64);
 }
 
 impl PositionExt for Vec2 {
-    fn tile_coordinate(&self) -> (i32, i32) {
-        let x = (self.x / TILE_SIZE as f32).floor() as i32;
-        let y = (self.y / TILE_SIZE as f32).floor() as i32;
+    fn tile_coordinate(&self) -> (i64, i64) {
+        let x = (self.x / TILE_SIZE as f32).floor() as i64;
+        let y = (self.y / TILE_SIZE as f32).floor() as i64;
         (x, y)
     }
 }

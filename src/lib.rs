@@ -3,6 +3,7 @@ pub mod components;
 pub mod ecs;
 pub mod fps_counter;
 pub mod input;
+pub mod ivec2;
 pub mod movement_util;
 pub mod resource;
 pub mod spritesheet;

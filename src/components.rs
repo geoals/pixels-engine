@@ -16,18 +16,13 @@ pub mod sprite_positions {
     pub const PLAYER_IDLE_LEFT: &[(u32, u32)] = &[(111, 34)];
     pub const PLAYER_IDLE_RIGHT: &[(u32, u32)] = &[(145, 34)];
 
-    pub const PLAYER_WALK_DOWN: &[(u32, u32)] = &[
-        (9, 34),  // frame 0
-        (26, 34), // frame 1
-        (43, 34), // frame 2
-        (26, 34), // frame 3
-    ];
+    pub const PLAYER_WALK_DOWN: &[(u32, u32)] = &[(26, 34), (9, 34), (26, 34), (43, 34)];
 
-    pub const PLAYER_WALK_UP: &[(u32, u32)] = &[(60, 34), (77, 34), (94, 34), (77, 34)];
+    pub const PLAYER_WALK_UP: &[(u32, u32)] = &[(77, 34), (60, 34), (77, 34), (94, 34)];
 
-    pub const PLAYER_WALK_LEFT: &[(u32, u32)] = &[(128, 34), (111, 34)];
+    pub const PLAYER_WALK_LEFT: &[(u32, u32)] = &[(111, 34), (128, 34)];
 
-    pub const PLAYER_WALK_RIGHT: &[(u32, u32)] = &[(162, 34), (145, 34)];
+    pub const PLAYER_WALK_RIGHT: &[(u32, u32)] = &[(145, 34), (162, 34)];
 }
 
 impl AnimatedSprite {
@@ -66,7 +61,7 @@ pub enum SpriteType {
 pub type Position = Vec2;
 
 impl Position {
-    pub fn at_tile(tile_x: i32, tile_y: i32) -> Self {
+    pub fn at_tile(tile_x: i64, tile_y: i64) -> Self {
         Self::new(
             tile_x as f32 * crate::TILE_SIZE as f32,
             tile_y as f32 * crate::TILE_SIZE as f32,

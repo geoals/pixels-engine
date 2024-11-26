@@ -1,5 +1,7 @@
 use std::ops::{Add, AddAssign, Mul, Sub};
 
+use crate::ivec2::IVec2;
+
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec2 {
     pub x: f32,
@@ -62,6 +64,12 @@ impl Sub for Vec2 {
             x: self.x - other.x,
             y: self.y - other.y,
         }
+    }
+}
+
+impl From<IVec2> for Vec2 {
+    fn from(ivec2: IVec2) -> Self {
+        Vec2::new(ivec2.x as f32, ivec2.y as f32)
     }
 }
 

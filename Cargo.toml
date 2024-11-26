@@ -11,3 +11,7 @@ image = "0.25.5"
 ldtk2 = "0.8.0"
 pixels = "0.14.0"
 winit = "0.28.6"
+
+[features]
+debug = []
+fps = []
