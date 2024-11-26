@@ -16,15 +16,14 @@ use super::System;
 
 pub struct MovementSystem;
 
-// const MOVEMENT_DELAY: f32 = 0.1;
-const MOVEMENT_DELAY: f32 = 0.0;
+const MOVEMENT_DELAY: Duration = Duration::from_millis(100);
 
 // Simplify prop passing
 struct MovementContext<'a> {
     position: &'a mut Position,
     movement: &'a mut Movement,
     tilemap: &'a TileMap,
-    delta_time: f32,
+    delta_time: Duration,
     input: &'a Input,
 }
 
@@ -38,8 +37,6 @@ impl System for MovementSystem {
             .zip(position_components.iter_mut());
         let iter =
             zip.filter_map(|(movement, position)| Some((movement.as_mut()?, position.as_mut()?)));
-
-        let delta_time = delta_time.as_secs_f32();
 
         for (movement, position) in iter {
             let mut ctx = MovementContext {
@@ -62,17 +59,19 @@ fn handle_movement(ctx: &mut MovementContext) {
         snap_to_grid(ctx.position);
 
         if ctx.input.none() {
-            ctx.movement.start_delay = 0.0;
+            ctx.movement.start_delay = Duration::ZERO;
+            ctx.movement.idle_timer = Duration::ZERO;
         }
     }
 
     // Make sure the initial direction is updated when you are standing still
     // but changing direction without moving
-    // BUG: start_delay is not reset when changing direction without moving
-    // which means you can only rotate your character a few times before moving
-    // can possibly solved with adding an idle_timer
-    if ctx.input.none() && ctx.movement.initial_direction != ctx.movement.direction {
+    if ctx.input.none()
+        && !ctx.movement.is_moving
+        && ctx.movement.idle_timer >= Duration::from_millis(50)
+    {
         ctx.movement.initial_direction = ctx.movement.direction;
+        ctx.movement.start_delay = Duration::ZERO;
     }
 
     if let Some(input_direction) = Direction::from_vector(ctx.input.vector()) {
@@ -96,6 +95,7 @@ fn handle_movement(ctx: &mut MovementContext) {
         apply_movement(ctx);
     } else {
         ctx.movement.is_moving = false;
+        ctx.movement.idle_timer += ctx.delta_time;
         snap_to_grid(ctx.position);
     }
 }
@@ -117,7 +117,7 @@ fn will_reach_next_tile_in_next_update(ctx: &MovementContext) -> bool {
 
 fn apply_movement(ctx: &mut MovementContext) {
     let movement_vector = ctx.movement.direction.to_vector();
-    let movement_step = movement_vector * ctx.movement.speed * ctx.delta_time;
+    let movement_step = movement_vector * ctx.movement.speed * ctx.delta_time.as_secs_f32();
     *ctx.position += movement_step;
 }
 
@@ -141,6 +141,6 @@ fn is_traversable(ctx: &MovementContext) -> bool {
 
 fn next_position(ctx: &MovementContext) -> Vec2 {
     let movement_vector = ctx.movement.direction.to_vector();
-    let movement_step = movement_vector * ctx.movement.speed * ctx.delta_time;
+    let movement_step = movement_vector * ctx.movement.speed * ctx.delta_time.as_secs_f32();
     *(ctx.position) + movement_step
 }

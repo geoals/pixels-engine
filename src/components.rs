@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use crate::input::Input;
 use crate::movement_util::{Axis, Direction};
 
@@ -17,11 +19,8 @@ pub mod sprite_positions {
     pub const PLAYER_IDLE_RIGHT: &[(u32, u32)] = &[(145, 34)];
 
     pub const PLAYER_WALK_DOWN: &[(u32, u32)] = &[(26, 34), (9, 34), (26, 34), (43, 34)];
-
     pub const PLAYER_WALK_UP: &[(u32, u32)] = &[(77, 34), (60, 34), (77, 34), (94, 34)];
-
     pub const PLAYER_WALK_LEFT: &[(u32, u32)] = &[(111, 34), (128, 34)];
-
     pub const PLAYER_WALK_RIGHT: &[(u32, u32)] = &[(145, 34), (162, 34)];
 }
 
@@ -83,9 +82,11 @@ pub struct Movement {
     pub is_moving: bool,
 
     // These are used to apply a delay before starting movement
-    pub start_delay: f32,
+    pub start_delay: Duration,
     // No delay when moving in this direction
     pub initial_direction: Direction,
+    // How long since last movement
+    pub idle_timer: Duration,
 }
 
 impl Movement {

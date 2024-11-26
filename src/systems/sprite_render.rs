@@ -30,7 +30,7 @@ impl System for SpriteRenderSystem {
             if let (Some(sprite), Some(position)) = (&sprite_components[i], &position_components[i])
             {
                 let movement = movement_components[i].as_ref();
-                self.draw_sprite(
+                draw_sprite(
                     sprite,
                     position,
                     movement,
@@ -44,45 +44,42 @@ impl System for SpriteRenderSystem {
     }
 }
 
-impl SpriteRenderSystem {
-    #[allow(clippy::too_many_arguments)]
-    fn draw_sprite(
-        &self,
-        sprite: &AnimatedSprite,
-        position: &Position,
-        movement: Option<&Movement>,
-        camera: &Camera,
-        spritesheet: &mut CharacterSpritesheet,
-        frame: &mut [u8],
-        input: &Input,
-    ) {
-        if !camera.is_visible(*position) {
-            return;
-        }
-
-        let sheet = match sprite.sprite_type {
-            SpriteType::Player => spritesheet,
-        };
-
-        let (direction, is_moving) = if let Some(movement) = movement {
-            (
-                &movement.direction,
-                movement.is_moving || input.x() != 0 || input.y() != 0,
-            )
-        } else {
-            (&Direction::Down, false)
-        };
-
-        let vertical_offset = -4.0;
-        let (sprite_x, sprite_y) = sprite.get_current_frame(direction, is_moving);
-        let screen_pos = camera.world_to_screen(*position);
-
-        sheet.0.draw_sprite_to_buffer(
-            sprite_x,
-            sprite_y,
-            frame,
-            screen_pos.x.round() as i32,
-            (screen_pos.y + vertical_offset).round() as i32,
-        );
+#[allow(clippy::too_many_arguments)]
+fn draw_sprite(
+    sprite: &AnimatedSprite,
+    position: &Position,
+    movement: Option<&Movement>,
+    camera: &Camera,
+    spritesheet: &mut CharacterSpritesheet,
+    frame: &mut [u8],
+    input: &Input,
+) {
+    if !camera.is_visible(*position) {
+        return;
     }
+
+    let sheet = match sprite.sprite_type {
+        SpriteType::Player => spritesheet,
+    };
+
+    let (direction, is_moving) = if let Some(movement) = movement {
+        (
+            &movement.direction,
+            movement.is_moving || input.x() != 0 || input.y() != 0,
+        )
+    } else {
+        (&Direction::Down, false)
+    };
+
+    let vertical_offset = -4.0;
+    let (sprite_x, sprite_y) = sprite.get_current_frame(direction, is_moving);
+    let screen_pos = camera.world_to_screen(*position);
+
+    sheet.0.draw_sprite_to_buffer(
+        sprite_x,
+        sprite_y,
+        frame,
+        screen_pos.x.round() as i32,
+        (screen_pos.y + vertical_offset).round() as i32,
+    );
 }

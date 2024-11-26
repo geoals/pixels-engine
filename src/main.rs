@@ -9,7 +9,6 @@ use pixels_engine::input::Input;
 use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
 use pixels_engine::systems::animation::AnimationSystem;
 use pixels_engine::systems::camera::CameraFollowSystem;
-use pixels_engine::systems::collision::CollisionSystem;
 use pixels_engine::systems::debug_grid::DebugGridSystem;
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
@@ -44,7 +43,7 @@ impl Application {
             )
             .unwrap()
         };
-        pixels.enable_vsync(true);
+        pixels.enable_vsync(false);
 
         let mut world = World::new();
 
