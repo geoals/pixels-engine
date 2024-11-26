@@ -74,9 +74,9 @@ fn handle_movement(ctx: &mut MovementContext) {
         ctx.movement.start_delay = Duration::ZERO;
     }
 
-    if let Some(input_direction) = Direction::from_vector(ctx.input.vector()) {
+    if let Some(current_direction) = ctx.input.current_direction() {
         // No delay if input matches initial direction
-        if ctx.movement.initial_direction == input_direction
+        if ctx.movement.initial_direction == current_direction
             || ctx.movement.start_delay >= MOVEMENT_DELAY
         {
             ctx.movement.is_moving = true;
@@ -87,7 +87,7 @@ fn handle_movement(ctx: &mut MovementContext) {
 
         // Changing directions
         if is_on_grid(ctx.position) {
-            ctx.movement.direction = input_direction;
+            ctx.movement.direction = current_direction;
         }
     };
 
