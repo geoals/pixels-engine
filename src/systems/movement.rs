@@ -116,9 +116,7 @@ fn will_reach_next_tile_in_next_update(ctx: &MovementContext) -> bool {
 }
 
 fn apply_movement(ctx: &mut MovementContext) {
-    let movement_vector = ctx.movement.direction.to_vector();
-    let movement_step = movement_vector * ctx.movement.speed * ctx.delta_time.as_secs_f32();
-    *ctx.position += movement_step;
+    *ctx.position = next_position(ctx);
 }
 
 fn is_on_grid(position: &Vec2) -> bool {
@@ -140,7 +138,11 @@ fn is_traversable(ctx: &MovementContext) -> bool {
 }
 
 fn next_position(ctx: &MovementContext) -> Vec2 {
+    let movement_speed_multiplier = if ctx.input.shift() { 2.0 } else { 1.0 };
     let movement_vector = ctx.movement.direction.to_vector();
-    let movement_step = movement_vector * ctx.movement.speed * ctx.delta_time.as_secs_f32();
+    let movement_step = movement_vector
+        * ctx.movement.speed
+        * ctx.delta_time.as_secs_f32()
+        * movement_speed_multiplier;
     *(ctx.position) + movement_step
 }

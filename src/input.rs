@@ -6,6 +6,7 @@ pub struct Input {
     down: bool,
     left: bool,
     right: bool,
+    shift: bool,
 }
 
 impl Input {
@@ -33,6 +34,10 @@ impl Input {
             return 1;
         }
         0
+    }
+
+    pub fn shift(&self) -> bool {
+        self.shift
     }
 
     pub fn none(&self) -> bool {
@@ -70,6 +75,10 @@ impl Input {
                     }
                     VirtualKeyCode::D | VirtualKeyCode::Right => {
                         self.right = is_pressed;
+                        true
+                    }
+                    VirtualKeyCode::LShift => {
+                        self.shift = is_pressed;
                         true
                     }
                     _ => false,
