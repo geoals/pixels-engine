@@ -21,7 +21,7 @@ impl System for TileRenderSystem {
     ) {
         let camera = world.get_resource::<Camera>().unwrap();
         let tilemap = world.get_resource::<TileMap>().unwrap();
-        let tiles = &tilemap.current_level().tiles;
+        let current_level = tilemap.current_level();
 
         let frame = pixels.frame_mut();
 
@@ -37,7 +37,7 @@ impl System for TileRenderSystem {
         // Iterate through visible tiles
         for y in start_tile_y..(start_tile_y + rows) {
             for x in start_tile_x..(start_tile_x + columns) {
-                let Some(tile) = tiles.get(&(x, y)) else {
+                let Some(tile) = current_level.tiles.get(&(x, y)) else {
                     continue;
                 };
 
@@ -50,8 +50,8 @@ impl System for TileRenderSystem {
 
                 draw_tile(
                     frame,
-                    &tilemap.tileset_pixels,
-                    tilemap.tileset_width,
+                    &current_level.tileset_pixels,
+                    current_level.tileset_width,
                     tile,
                     tilemap.tilesize,
                     screen_x,
