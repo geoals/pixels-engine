@@ -1,6 +1,7 @@
 use std::thread;
 use std::time::{Duration, Instant};
 
+use hecs::World;
 use pixels::{Error, Pixels, SurfaceTexture};
 use pixels_engine::camera::Camera;
 use pixels_engine::components::{
@@ -17,8 +18,9 @@ use pixels_engine::systems::level_transition::{LevelTransitionSystem, ScreenTran
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
+use pixels_engine::systems::SystemContainer;
 use pixels_engine::tile::{CurrentLevelId, TileMap};
-use pixels_engine::{SystemContainer, SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
+use pixels_engine::{SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
@@ -26,7 +28,7 @@ use winit::window::{Window, WindowBuilder};
 
 struct Application {
     systems: SystemContainer,
-    hecs_world: hecs::World,
+    world: World,
     resources: Resources,
     input: Input,
     pixels: Pixels,
@@ -98,7 +100,7 @@ impl Application {
             input: Input::new(),
             pixels,
             delta_time: Duration::new(0, 0),
-            hecs_world: world,
+            world,
             resources,
         }
     }
@@ -106,7 +108,7 @@ impl Application {
     fn update(&mut self) {
         for system in self.systems.all() {
             system.update(
-                &mut self.hecs_world,
+                &mut self.world,
                 &mut self.resources,
                 &mut self.pixels,
                 &self.input,
