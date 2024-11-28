@@ -1,11 +1,13 @@
-use crate::{ivec2::IVec2, vec2::Vec2};
+use crate::{ivec2::IVec2, vec2::Vec2, World};
 use ldtk2::Ldtk;
 use std::collections::HashMap;
+
+pub struct CurrentLevelId(pub String);
 
 #[derive(Debug)]
 pub struct TileMap {
     pub levels: HashMap<String, Level>,
-    current_level_id: String,
+    initial_level_id: String,
     pub tilesize: i64,
     pub player_starting_position: Vec2,
     pub entities: HashMap<EntityId, EntityInstance>,
@@ -18,7 +20,6 @@ pub struct Level {
     pub tileset_width: u32,
     pub tileset_height: u32,
     pub level_id: String,
-    pub transitions: Vec<Transition>,
 }
 
 type EntityId = String;
@@ -34,9 +35,10 @@ pub struct TileData {
     pub tileset_position: IVec2,
     pub position: IVec2,
     pub traversable: bool,
+    pub transition: Option<Transition>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Transition {
     pub entity_id: EntityId,
     pub destination: EntityId,
@@ -73,11 +75,10 @@ impl TileMap {
         }
 
         let entities = Self::load_all_entities(&ldtk)?;
-        dbg!(&entities);
 
         Ok(TileMap {
             levels,
-            current_level_id: ldtk.levels[0].iid.clone(),
+            initial_level_id: ldtk.levels[0].iid.clone(),
             tilesize,
             player_starting_position,
             entities,
@@ -111,10 +112,7 @@ impl TileMap {
     ) -> Result<Level, Box<dyn std::error::Error>> {
         let mut tiles = HashMap::new();
 
-        let layer_instances = level_data
-            .layer_instances
-            .as_ref()
-            .ok_or("No layers in level")?;
+        let layer_instances = level_data.layer_instances.as_ref().ok_or("No layers in level")?;
 
         let tile_layer = layer_instances
             .iter()
@@ -125,6 +123,34 @@ impl TileMap {
             .iter()
             .find(|layer| layer.identifier == "Collision")
             .ok_or("Could not find Collision layer")?;
+
+        let entities_layer = layer_instances
+            .iter()
+            .find(|layer| layer.identifier == "Entities")
+            .ok_or("Could not find Entities layer")?;
+
+        // Collect entrance entities with their grid positions and destination info
+        let mut entrance_transitions = HashMap::new();
+        for entity in &entities_layer.entity_instances {
+            if entity.identifier == "Entrance" {
+                if let Some(field) =
+                    entity.field_instances.iter().find(|f| f.identifier == "Entity_ref")
+                {
+                    if let Some(field_value) = &field.value {
+                        let destination_entity_id =
+                            field_value["entityIid"].as_str().unwrap().to_string();
+                        let grid_pos = (entity.grid[0], entity.grid[1]);
+                        entrance_transitions.insert(
+                            grid_pos,
+                            Transition {
+                                entity_id: entity.iid.clone(),
+                                destination: destination_entity_id,
+                            },
+                        );
+                    }
+                }
+            }
+        }
 
         // Load tileset for this level
         let tileset = tilesets
@@ -143,10 +169,18 @@ impl TileMap {
             let grid_index = grid_y * collision_layer.c_wid as usize + grid_x;
             let traversable = collision_layer.int_grid_csv[grid_index] == 0;
 
+            // Check if this tile has an entrance
+            let grid_pos = (
+                tile.px[0] / tile_layer.grid_size,
+                tile.px[1] / tile_layer.grid_size,
+            );
+            let transition = entrance_transitions.get(&grid_pos).cloned();
+
             let tile_data = TileData {
                 tileset_position: IVec2::new(tile.src[0], tile.src[1]),
                 position: IVec2::new(tile.px[0], tile.px[1]),
                 traversable,
+                transition,
             };
 
             tiles.insert(
@@ -164,7 +198,6 @@ impl TileMap {
             tileset_width: tileset_img.width(),
             tileset_height: tileset_img.height(),
             level_id: level_data.iid.clone(),
-            transitions: vec![],
         })
     }
 
@@ -195,7 +228,12 @@ impl TileMap {
         Ok(entities)
     }
 
-    pub fn current_level(&self) -> &Level {
-        self.levels.get(&self.current_level_id).unwrap()
+    pub fn get_level(&self, world: &World) -> &Level {
+        let current_level_id = &world.get_resource::<CurrentLevelId>().unwrap().0;
+        self.levels.get(current_level_id).unwrap()
+    }
+
+    pub fn initial_level_id(&self) -> String {
+        self.initial_level_id.clone()
     }
 }

@@ -73,6 +73,15 @@ impl Position {
             (self.y / crate::TILE_SIZE as f32) as i64,
         )
     }
+
+    pub fn aligned_tile(&self) -> Option<(i64, i64)> {
+        // Check if position is exactly aligned with tile grid
+        if self.x % crate::TILE_SIZE as f32 == 0.0 && self.y % crate::TILE_SIZE as f32 == 0.0 {
+            Some(self.tile())
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Default)]

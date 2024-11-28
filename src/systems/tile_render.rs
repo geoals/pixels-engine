@@ -21,7 +21,7 @@ impl System for TileRenderSystem {
     ) {
         let camera = world.get_resource::<Camera>().unwrap();
         let tilemap = world.get_resource::<TileMap>().unwrap();
-        let current_level = tilemap.current_level();
+        let current_level = tilemap.get_level(world);
 
         let frame = pixels.frame_mut();
 

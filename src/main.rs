@@ -10,10 +10,11 @@ use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
 use pixels_engine::systems::animation::AnimationSystem;
 use pixels_engine::systems::camera::CameraFollowSystem;
 use pixels_engine::systems::debug_grid::DebugGridSystem;
+use pixels_engine::systems::level_transition::{LevelTransitionSystem, TransitionState};
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
-use pixels_engine::tile::TileMap;
+use pixels_engine::tile::{CurrentLevelId, TileMap};
 use pixels_engine::{ecs, World, SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
@@ -52,8 +53,10 @@ impl Application {
         ));
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
         let player_starting_position = tilemap.player_starting_position;
+        world.add_resource(CurrentLevelId(tilemap.initial_level_id()));
         world.add_resource(tilemap);
         world.add_resource(Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT));
+        world.add_resource(TransitionState::default());
 
         let player = world.new_entity();
 
@@ -67,7 +70,6 @@ impl Application {
         world.add_component_to_entity(player, Player);
 
         world.add_system(MovementSystem);
-        // world.add_system(CollisionSystem);
         world.add_system(AnimationSystem);
         world.add_system(CameraFollowSystem);
         if cfg!(feature = "debug") {
@@ -75,6 +77,7 @@ impl Application {
         }
         world.add_system(TileRenderSystem);
         world.add_system(SpriteRenderSystem);
+        world.add_system(LevelTransitionSystem);
 
         Self {
             world,
@@ -130,10 +133,7 @@ fn main() -> Result<(), Error> {
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !world.input.process_events(&event) => match event {
             WindowEvent::Resized(size) => {
-                world
-                    .pixels()
-                    .resize_surface(size.width, size.height)
-                    .unwrap();
+                world.pixels().resize_surface(size.width, size.height).unwrap();
             }
             WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
             _ => {}
