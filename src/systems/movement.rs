@@ -134,7 +134,7 @@ fn is_traversable(ctx: &MovementContext) -> bool {
     };
     let collision_tile = collision_pos.tile_coordinate();
 
-    ctx.tilemap.tiles[&(collision_tile.0, collision_tile.1)].traversable
+    ctx.tilemap.current_level().tiles[&(collision_tile.0, collision_tile.1)].traversable
 }
 
 fn next_position(ctx: &MovementContext) -> Vec2 {

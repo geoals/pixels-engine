@@ -51,7 +51,7 @@ impl Application {
             Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
         ));
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
-        let player_starting_position = tilemap.player_starting_position;
+        let player_starting_position = tilemap.current_level().player_starting_position;
         world.add_resource(tilemap);
         world.add_resource(Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT));
 
