@@ -6,7 +6,6 @@ use crate::{
     components::{AnimatedSprite, Movement},
     input::Input,
     resource::Resources,
-    World,
 };
 
 use super::System;
@@ -17,8 +16,8 @@ impl System for AnimationSystem {
     fn update(
         &self,
         hecs_world: &mut hecs::World,
-        resources: &mut Resources,
-        _pixels: &mut Pixels,
+        _: &mut Resources,
+        _: &mut Pixels,
         input: &Input,
         delta_time: Duration,
     ) {

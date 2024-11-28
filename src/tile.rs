@@ -1,4 +1,4 @@
-use crate::{ivec2::IVec2, vec2::Vec2, World};
+use crate::{ivec2::IVec2, vec2::Vec2};
 use ldtk2::Ldtk;
 use std::collections::HashMap;
 

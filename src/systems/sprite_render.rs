@@ -5,7 +5,6 @@ use pixels::Pixels;
 use crate::{
     camera::Camera,
     components::{AnimatedSprite, Movement, Position, SpriteType},
-    ecs::World,
     input::Input,
     movement_util::Direction,
     resource::Resources,
@@ -19,21 +18,15 @@ pub struct SpriteRenderSystem;
 impl System for SpriteRenderSystem {
     fn update(
         &self,
-        hecs_world: &mut hecs::World,
+        world: &mut hecs::World,
         resources: &mut Resources,
         pixels: &mut Pixels,
         input: &Input,
         _delta_time: Duration,
     ) {
-        // get camera resource
-        // get spritesheet resource
-
         for (_, (sprite, position, movement)) in
-            hecs_world.query_mut::<(&AnimatedSprite, &Position, &Movement)>()
+            world.query_mut::<(&AnimatedSprite, &Position, &Movement)>()
         {
-            // let camera = world.get_resource::<Camera>().unwrap();
-            // let mut spritesheet = world.get_resource_mut::<CharacterSpritesheet>().unwrap();
-            //
             let frame = pixels.frame_mut();
 
             draw_sprite(
@@ -46,31 +39,6 @@ impl System for SpriteRenderSystem {
                 input,
             );
         }
-
-        // let camera = world.get_resource::<Camera>().unwrap();
-        // let mut spritesheet = world.get_resource_mut::<CharacterSpritesheet>().unwrap();
-        //
-        // let sprite_components = world.borrow_components_mut::<AnimatedSprite>().unwrap();
-        // let position_components = world.borrow_components_mut::<Position>().unwrap();
-        // let movement_components = world.borrow_components_mut::<Movement>().unwrap();
-        //
-        // let frame = pixels.frame_mut();
-        //
-        // for i in 0..sprite_components.len() {
-        //     if let (Some(sprite), Some(position)) = (&sprite_components[i], &position_components[i])
-        //     {
-        //         let movement = movement_components[i].as_ref();
-        //         draw_sprite(
-        //             sprite,
-        //             position,
-        //             movement,
-        //             &camera,
-        //             &mut spritesheet,
-        //             frame,
-        //             input,
-        //         );
-        //     }
-        // }
     }
 }
 

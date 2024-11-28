@@ -18,14 +18,14 @@ use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
 use pixels_engine::tile::{CurrentLevelId, TileMap};
-use pixels_engine::{ecs, World, SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
+use pixels_engine::{SystemContainer, SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use winit::dpi::LogicalSize;
 use winit::event::{Event, WindowEvent};
 use winit::event_loop::{ControlFlow, EventLoop};
 use winit::window::{Window, WindowBuilder};
 
 struct Application {
-    world: ecs::World,
+    systems: SystemContainer,
     hecs_world: hecs::World,
     resources: Resources,
     input: Input,
@@ -51,26 +51,26 @@ impl Application {
         };
         pixels.enable_vsync(false);
 
-        let mut hecs_world = hecs::World::new();
+        let mut world = hecs::World::new();
         let spritesheet = Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap();
-        hecs_world.spawn((spritesheet,));
+        world.spawn((spritesheet,));
 
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
         let player_starting_position = tilemap.player_starting_position;
-        hecs_world.spawn((PlayerStartingPosition(tilemap.player_starting_position),));
-        hecs_world.spawn((CurrentLevelId(tilemap.initial_level_id()),));
-        hecs_world.spawn((tilemap,));
-        hecs_world.spawn((Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT),));
-        hecs_world.spawn((ScreenTransition::default(),));
+        world.spawn((PlayerStartingPosition(tilemap.player_starting_position),));
+        world.spawn((CurrentLevelId(tilemap.initial_level_id()),));
+        world.spawn((tilemap,));
+        world.spawn((Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT),));
+        world.spawn((ScreenTransition::default(),));
 
-        hecs_world.spawn((
+        world.spawn((
             AnimatedSprite::new(SpriteType::Player),
             Position::new(player_starting_position.x, player_starting_position.y),
             Movement::new(48.0),
             Player,
         ));
 
-        let mut world = World::new();
+        let mut systems = SystemContainer::new();
 
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
         let resources = Resources {
@@ -83,28 +83,28 @@ impl Application {
             screen_transition: ScreenTransition::default(),
         };
 
-        world.add_system(MovementSystem);
-        world.add_system(AnimationSystem);
-        world.add_system(CameraFollowSystem);
+        systems.add(MovementSystem);
+        systems.add(AnimationSystem);
+        systems.add(CameraFollowSystem);
         if cfg!(feature = "debug") {
-            world.add_system(DebugGridSystem);
+            systems.add(DebugGridSystem);
         }
-        world.add_system(TileRenderSystem);
-        world.add_system(SpriteRenderSystem);
-        world.add_system(LevelTransitionSystem);
+        systems.add(TileRenderSystem);
+        systems.add(SpriteRenderSystem);
+        systems.add(LevelTransitionSystem);
 
         Self {
-            world,
+            systems,
             input: Input::new(),
             pixels,
             delta_time: Duration::new(0, 0),
-            hecs_world,
+            hecs_world: world,
             resources,
         }
     }
 
     fn update(&mut self) {
-        for system in self.world.systems() {
+        for system in self.systems.all() {
             system.update(
                 &mut self.hecs_world,
                 &mut self.resources,
