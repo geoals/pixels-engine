@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use hecs::Bundle;
+
 use crate::input::Input;
 use crate::movement_util::{Axis, Direction};
 
@@ -117,3 +119,4 @@ impl Movement {
 }
 
 pub struct Player;
+pub struct PlayerStartingPosition(pub Position);

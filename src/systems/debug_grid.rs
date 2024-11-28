@@ -1,19 +1,26 @@
 use super::System;
-use crate::camera::Camera;
-use crate::ecs::World;
 use crate::input::Input;
+use crate::resource::Resources;
 use crate::vec2::Vec2;
 use crate::SCREEN_HEIGHT;
 use crate::SCREEN_WIDTH;
 use crate::TILE_SIZE;
+use hecs::World;
 use pixels::Pixels;
 use std::time::Duration;
 
 pub struct DebugGridSystem;
 
 impl System for DebugGridSystem {
-    fn update(&self, world: &World, pixels: &mut Pixels, _input: &Input, _delta_time: Duration) {
-        let camera = world.get_resource::<Camera>().unwrap();
+    fn update(
+        &self,
+        _world: &mut World,
+        resources: &mut Resources,
+        pixels: &mut Pixels,
+        _input: &Input,
+        _delta_time: Duration,
+    ) {
+        let camera = &resources.camera;
         let frame = pixels.frame_mut();
 
         // Calculate visible grid range

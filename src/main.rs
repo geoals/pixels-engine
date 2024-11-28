@@ -3,14 +3,17 @@ use std::time::{Duration, Instant};
 
 use pixels::{Error, Pixels, SurfaceTexture};
 use pixels_engine::camera::Camera;
-use pixels_engine::components::{AnimatedSprite, Movement, Player, Position, SpriteType};
+use pixels_engine::components::{
+    AnimatedSprite, Movement, Player, PlayerStartingPosition, Position, SpriteType,
+};
 use pixels_engine::fps_counter::FpsCounter;
 use pixels_engine::input::Input;
+use pixels_engine::resource::Resources;
 use pixels_engine::spritesheet::{CharacterSpritesheet, Spritesheet};
 use pixels_engine::systems::animation::AnimationSystem;
 use pixels_engine::systems::camera::CameraFollowSystem;
 use pixels_engine::systems::debug_grid::DebugGridSystem;
-use pixels_engine::systems::level_transition::{LevelTransitionSystem, TransitionState};
+use pixels_engine::systems::level_transition::{LevelTransitionSystem, ScreenTransition};
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
@@ -23,6 +26,8 @@ use winit::window::{Window, WindowBuilder};
 
 struct Application {
     world: ecs::World,
+    hecs_world: hecs::World,
+    resources: Resources,
     input: Input,
     pixels: Pixels,
     delta_time: Duration,
@@ -46,28 +51,37 @@ impl Application {
         };
         pixels.enable_vsync(false);
 
-        let mut world = World::new();
+        let mut hecs_world = hecs::World::new();
+        let spritesheet = Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap();
+        hecs_world.spawn((spritesheet,));
 
-        world.add_resource(CharacterSpritesheet(
-            Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
-        ));
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
         let player_starting_position = tilemap.player_starting_position;
-        world.add_resource(CurrentLevelId(tilemap.initial_level_id()));
-        world.add_resource(tilemap);
-        world.add_resource(Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT));
-        world.add_resource(TransitionState::default());
+        hecs_world.spawn((PlayerStartingPosition(tilemap.player_starting_position),));
+        hecs_world.spawn((CurrentLevelId(tilemap.initial_level_id()),));
+        hecs_world.spawn((tilemap,));
+        hecs_world.spawn((Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT),));
+        hecs_world.spawn((ScreenTransition::default(),));
 
-        let player = world.new_entity();
-
-        world.add_component_to_entity(player, AnimatedSprite::new(SpriteType::Player));
-        world.add_component_to_entity(
-            player,
+        hecs_world.spawn((
+            AnimatedSprite::new(SpriteType::Player),
             Position::new(player_starting_position.x, player_starting_position.y),
-        );
+            Movement::new(48.0),
+            Player,
+        ));
 
-        world.add_component_to_entity(player, Movement::new(48.0));
-        world.add_component_to_entity(player, Player);
+        let mut world = World::new();
+
+        let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
+        let resources = Resources {
+            camera: Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT),
+            character_spritesheet: CharacterSpritesheet(
+                Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
+            ),
+            current_level_id: CurrentLevelId(tilemap.initial_level_id()),
+            tilemap,
+            screen_transition: ScreenTransition::default(),
+        };
 
         world.add_system(MovementSystem);
         world.add_system(AnimationSystem);
@@ -84,12 +98,20 @@ impl Application {
             input: Input::new(),
             pixels,
             delta_time: Duration::new(0, 0),
+            hecs_world,
+            resources,
         }
     }
 
     fn update(&mut self) {
         for system in self.world.systems() {
-            system.update(&self.world, &mut self.pixels, &self.input, self.delta_time);
+            system.update(
+                &mut self.hecs_world,
+                &mut self.resources,
+                &mut self.pixels,
+                &self.input,
+                self.delta_time,
+            );
         }
     }
 

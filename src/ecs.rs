@@ -65,9 +65,8 @@ impl World {
     ) {
         for component_vec in self.components.iter_mut() {
             // The `downcast_mut` type here is changed to `RefCell<Vec<Option<ComponentType>>`
-            if let Some(component_vec) = component_vec
-                .as_any_mut()
-                .downcast_mut::<RefCell<Vec<Option<ComponentType>>>>()
+            if let Some(component_vec) =
+                component_vec.as_any_mut().downcast_mut::<RefCell<Vec<Option<ComponentType>>>>()
             {
                 // add a `get_mut` here. Once again `get_mut` bypasses
                 // `RefCell`'s runtime checks if accessing through a `&mut` reference.
@@ -86,15 +85,13 @@ impl World {
         new_component_vec[entity] = Some(component);
 
         // Here we create a `RefCell` before inserting into `component_vecs`
-        self.components
-            .push(Box::new(RefCell::new(new_component_vec)));
+        self.components.push(Box::new(RefCell::new(new_component_vec)));
     }
 
     pub fn borrow_components_mut<T: 'static>(&self) -> Option<RefMut<Vec<Option<T>>>> {
         for component_vec in self.components.iter() {
-            if let Some(component_vec) = component_vec
-                .as_any()
-                .downcast_ref::<RefCell<Vec<Option<T>>>>()
+            if let Some(component_vec) =
+                component_vec.as_any().downcast_ref::<RefCell<Vec<Option<T>>>>()
             {
                 // Here we use `borrow_mut`.
                 // If this `RefCell` is already borrowed from this will panic.

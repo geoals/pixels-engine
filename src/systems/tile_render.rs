@@ -1,11 +1,6 @@
 use std::time::Duration;
 
-use crate::{
-    camera::Camera,
-    input::Input,
-    tile::{TileData, TileMap},
-    World, SCREEN_HEIGHT, SCREEN_WIDTH,
-};
+use crate::{input::Input, resource::Resources, tile::TileData, SCREEN_HEIGHT, SCREEN_WIDTH};
 
 use super::System;
 
@@ -14,14 +9,15 @@ pub struct TileRenderSystem;
 impl System for TileRenderSystem {
     fn update(
         &self,
-        world: &World,
+        _world: &mut hecs::World,
+        resources: &mut Resources,
         pixels: &mut pixels::Pixels,
         _input: &Input,
         _delta_time: Duration,
     ) {
-        let camera = world.get_resource::<Camera>().unwrap();
-        let tilemap = world.get_resource::<TileMap>().unwrap();
-        let current_level = tilemap.get_level(world);
+        let camera = &resources.camera;
+        let tilemap = &resources.tilemap;
+        let current_level = tilemap.get_level(&resources.current_level_id);
 
         let frame = pixels.frame_mut();
 

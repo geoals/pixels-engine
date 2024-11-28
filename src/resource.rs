@@ -4,9 +4,24 @@ use std::{
     collections::HashMap,
 };
 
+use crate::{
+    camera::Camera,
+    spritesheet::CharacterSpritesheet,
+    systems::level_transition::ScreenTransition,
+    tile::{CurrentLevelId, TileMap},
+};
+
 #[derive(Default)]
 pub struct Resource {
     data: HashMap<TypeId, RefCell<Box<dyn Any>>>,
+}
+
+pub struct Resources {
+    pub camera: Camera,
+    pub character_spritesheet: CharacterSpritesheet,
+    pub current_level_id: CurrentLevelId,
+    pub tilemap: TileMap,
+    pub screen_transition: ScreenTransition,
 }
 
 impl Resource {

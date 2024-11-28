@@ -4,10 +4,10 @@ use pixels::Pixels;
 
 use crate::{
     components::{Movement, Position},
-    ecs::World,
     input::Input,
     movement_util::{Direction, PositionExt},
-    tile::TileMap,
+    resource::Resources,
+    tile::{CurrentLevelId, TileMap},
     vec2::Vec2,
     TILE_SIZE,
 };
@@ -25,28 +25,28 @@ struct MovementContext<'a> {
     tilemap: &'a TileMap,
     delta_time: Duration,
     input: &'a Input,
-    world: &'a World,
+    current_level_id: &'a CurrentLevelId,
 }
 
 impl System for MovementSystem {
-    fn update(&self, world: &World, _pixels: &mut Pixels, input: &Input, delta_time: Duration) {
-        let tilemap = &world.get_resource::<TileMap>().unwrap();
-        let mut movement_components = world.borrow_components_mut::<Movement>().unwrap();
-        let mut position_components = world.borrow_components_mut::<Position>().unwrap();
-        let zip = movement_components.iter_mut().zip(position_components.iter_mut());
-        let iter =
-            zip.filter_map(|(movement, position)| Some((movement.as_mut()?, position.as_mut()?)));
-
-        for (movement, position) in iter {
+    fn update(
+        &self,
+        world: &mut hecs::World,
+        resources: &mut Resources,
+        _pixels: &mut Pixels,
+        input: &Input,
+        delta_time: Duration,
+    ) {
+        for (_, (position, movement)) in world.query_mut::<(&mut Position, &mut Movement)>() {
             let mut ctx = MovementContext {
                 position,
                 movement,
-                tilemap,
+                tilemap: &resources.tilemap,
                 delta_time,
                 input,
-                world,
+                current_level_id: &resources.current_level_id,
             };
-            handle_movement(&mut ctx)
+            handle_movement(&mut ctx);
         }
     }
 }
@@ -134,7 +134,8 @@ fn is_traversable(ctx: &MovementContext) -> bool {
     };
     let collision_tile = collision_pos.tile_coordinate();
 
-    ctx.tilemap.get_level(ctx.world).tiles[&(collision_tile.0, collision_tile.1)].traversable
+    ctx.tilemap.get_level(ctx.current_level_id).tiles[&(collision_tile.0, collision_tile.1)]
+        .traversable
 }
 
 fn next_position(ctx: &MovementContext) -> Vec2 {

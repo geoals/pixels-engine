@@ -228,9 +228,8 @@ impl TileMap {
         Ok(entities)
     }
 
-    pub fn get_level(&self, world: &World) -> &Level {
-        let current_level_id = &world.get_resource::<CurrentLevelId>().unwrap().0;
-        self.levels.get(current_level_id).unwrap()
+    pub fn get_level(&self, id: &CurrentLevelId) -> &Level {
+        self.levels.get(&id.0).unwrap()
     }
 
     pub fn initial_level_id(&self) -> String {

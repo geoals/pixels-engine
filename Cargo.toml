@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 env_logger = "0.11.5"
+hecs = "0.10.5"
 image = "0.25.5"
 ldtk2 = "0.8.0"
 pixels = "0.14.0"

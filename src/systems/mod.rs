@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use pixels::Pixels;
 
-use crate::{ecs::World, input::Input};
+use crate::{input::Input, resource::Resources};
 
 pub mod animation;
 pub mod camera;
@@ -13,5 +13,12 @@ pub mod sprite_render;
 pub mod tile_render;
 
 pub trait System {
-    fn update(&self, world: &World, pixels: &mut Pixels, input: &Input, delta_time: Duration);
+    fn update(
+        &self,
+        world: &mut hecs::World,
+        resources: &mut Resources,
+        pixels: &mut Pixels,
+        input: &Input,
+        delta_time: Duration,
+    );
 }
