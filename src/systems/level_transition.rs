@@ -2,16 +2,17 @@ use super::System;
 use crate::{
     components::{Movement, Position},
     tile::{CurrentLevelId, TileMap},
+    World,
 };
 
 const FADE_SPEED: f32 = 5.0;
+const FADE_UPDATE_INTERVAL: f32 = 1.0 / 15.0; // 15 FPS fade
 
 // Resource
 pub struct TransitionState {
     state: TransitionPhase,
     fade_alpha: f32,
     time_since_last_fade: f32,
-    fade_update_interval: f32, // Time between fade updates in seconds
 }
 
 #[derive(Clone)]
@@ -31,7 +32,6 @@ impl Default for TransitionState {
             state: TransitionPhase::None,
             fade_alpha: 0.0,
             time_since_last_fade: 0.0,
-            fade_update_interval: 1.0 / 15.0, // 15 FPS fade
         }
     }
 }
@@ -66,15 +66,10 @@ impl System for LevelTransitionSystem {
         _input: &crate::input::Input,
         delta_time: std::time::Duration,
     ) {
-        let delta_seconds = delta_time.as_secs_f32();
         let mut transition_state = world.get_resource_mut::<TransitionState>().unwrap();
+        transition_state.time_since_last_fade += delta_time.as_secs_f32();
 
-        // Update the timer
-        transition_state.time_since_last_fade += delta_seconds;
-
-        // Only update fade if enough time has passed
-        let should_update_fade =
-            transition_state.time_since_last_fade >= transition_state.fade_update_interval;
+        let should_update_fade = transition_state.time_since_last_fade >= FADE_UPDATE_INTERVAL;
 
         match transition_state.state.clone() {
             TransitionPhase::None => {
@@ -94,18 +89,13 @@ impl System for LevelTransitionSystem {
                 position_idx,
             } => {
                 if should_update_fade {
-                    transition_state.fade_alpha +=
-                        FADE_SPEED * transition_state.fade_update_interval;
+                    transition_state.fade_alpha += FADE_SPEED * FADE_UPDATE_INTERVAL;
                     transition_state.time_since_last_fade = 0.0;
 
                     if transition_state.fade_alpha >= 1.0 {
                         transition_state.fade_alpha = 1.0;
 
-                        {
-                            let mut current_level_id =
-                                world.get_resource_mut::<CurrentLevelId>().unwrap();
-                            current_level_id.0 = destination_level_id;
-                        }
+                        change_level(world, destination_level_id);
 
                         if let Some(mut position_components) =
                             world.borrow_components_mut::<Position>()
@@ -121,8 +111,7 @@ impl System for LevelTransitionSystem {
             }
             TransitionPhase::FadingIn => {
                 if should_update_fade {
-                    transition_state.fade_alpha -=
-                        FADE_SPEED * transition_state.fade_update_interval;
+                    transition_state.fade_alpha -= FADE_SPEED * FADE_UPDATE_INTERVAL;
                     transition_state.time_since_last_fade = 0.0;
 
                     if transition_state.fade_alpha <= 0.0 {
@@ -160,4 +149,9 @@ fn detect_transition(world: &crate::World) -> Option<(usize, String, Position)> 
         }
     }
     None
+}
+
+fn change_level(world: &World, destination_level_id: String) {
+    let mut current_level_id = world.get_resource_mut::<CurrentLevelId>().unwrap();
+    current_level_id.0 = destination_level_id;
 }
