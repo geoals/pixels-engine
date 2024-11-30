@@ -1,6 +1,6 @@
-use crate::{ivec2::IVec2, vec2::Vec2};
+use crate::{ivec2::IVec2, vec2::Vec2, TILE_SIZE};
 use ldtk2::Ldtk;
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 pub struct CurrentLevelId(pub String);
 
@@ -36,12 +36,44 @@ pub struct TileData {
     pub position: IVec2,
     pub traversable: bool,
     pub transition: Option<Transition>,
+    pub animation: Option<TileAnimation>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Transition {
     pub entity_id: EntityId,
     pub destination: EntityId,
+}
+
+#[derive(Debug, Clone)]
+pub struct TileAnimation {
+    pub frames: Vec<IVec2>,         // Positions of each frame in the tileset
+    pub frame_duration: Duration,   // How long each frame should display
+    pub current_frame: usize,       // Current frame index
+    pub accumulated_time: Duration, // Time accumulated since last frame change
+}
+
+impl TileAnimation {
+    pub fn new(frames: Vec<IVec2>, frame_duration: Duration) -> Self {
+        Self {
+            frames,
+            frame_duration,
+            current_frame: 0,
+            accumulated_time: Duration::ZERO,
+        }
+    }
+
+    pub fn update(&mut self, delta_time: Duration) {
+        self.accumulated_time += delta_time;
+        if self.accumulated_time >= self.frame_duration {
+            self.current_frame = (self.current_frame + 1) % self.frames.len();
+            self.accumulated_time -= self.frame_duration;
+        }
+    }
+
+    pub fn current_position(&self) -> IVec2 {
+        self.frames[self.current_frame]
+    }
 }
 
 impl TileMap {
@@ -176,11 +208,15 @@ impl TileMap {
             );
             let transition = entrance_transitions.get(&grid_pos).cloned();
 
+            let tile_custom_data = tileset.custom_data.iter().find(|t| t.tile_id == tile.t);
+            let animation = read_animation_data(tile_custom_data, tileset.c_wid);
+
             let tile_data = TileData {
                 tileset_position: IVec2::new(tile.src[0], tile.src[1]),
                 position: IVec2::new(tile.px[0], tile.px[1]),
                 traversable,
                 transition,
+                animation,
             };
 
             tiles.insert(
@@ -235,4 +271,40 @@ impl TileMap {
     pub fn initial_level_id(&self) -> String {
         self.initial_level_id.clone()
     }
+}
+
+/// tile custom data must contain animation data on this format:
+/// animationTiles:1,2,3 (these are the tile ids in the tileset)
+/// frameTime:100 (time in ms for each frame)
+fn read_animation_data(
+    tile_custom_data: Option<&ldtk2::TileCustomMetadata>,
+    tileset_width: i64,
+) -> Option<TileAnimation> {
+    tile_custom_data?;
+    if !tile_custom_data?.data.starts_with("animationTiles") {
+        return None;
+    }
+
+    let custom_data_lines = tile_custom_data?.data.lines().collect::<Vec<&str>>();
+    let animation_frames = custom_data_lines[0]
+        .split_once(":")?
+        .1
+        .split(',')
+        .map(|id| {
+            let id_u32 = id.parse::<u32>().expect("Failed to parse tile id");
+            tile_id_to_position(id_u32, tileset_width)
+        })
+        .collect::<Vec<IVec2>>();
+    let frame_time =
+        custom_data_lines[1].split_once(":")?.1.parse::<u64>().expect("Failed to parse frame time");
+
+    let tile_animation = TileAnimation::new(animation_frames, Duration::from_millis(frame_time));
+
+    Some(tile_animation)
+}
+
+fn tile_id_to_position(id: u32, tileset_width: i64) -> IVec2 {
+    let x = id as i64 % tileset_width * TILE_SIZE as i64;
+    let y = id as i64 / tileset_width * TILE_SIZE as i64;
+    IVec2::new(x, y)
 }

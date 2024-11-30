@@ -17,6 +17,7 @@ use pixels_engine::systems::debug_grid::DebugGridSystem;
 use pixels_engine::systems::level_transition::{LevelTransitionSystem, ScreenTransition};
 use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
+use pixels_engine::systems::tile_animation::TileAnimationSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
 use pixels_engine::systems::SystemContainer;
 use pixels_engine::tile::{CurrentLevelId, TileMap};
@@ -87,6 +88,7 @@ impl Application {
 
         systems.add(MovementSystem);
         systems.add(AnimationSystem);
+        systems.add(TileAnimationSystem);
         systems.add(CameraFollowSystem);
         if cfg!(feature = "debug") {
             systems.add(DebugGridSystem);
