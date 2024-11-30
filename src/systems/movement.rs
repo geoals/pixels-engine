@@ -3,7 +3,7 @@ use std::time::Duration;
 use pixels::Pixels;
 
 use crate::{
-    components::{Movement, Position},
+    components::{Light, Movement, Position},
     input::Input,
     movement_util::{Direction, PositionExt},
     resource::Resources,
@@ -22,6 +22,7 @@ const MOVEMENT_DELAY: Duration = Duration::from_millis(100);
 struct MovementContext<'a> {
     position: &'a mut Position,
     movement: &'a mut Movement,
+    light: &'a mut Light,
     tilemap: &'a TileMap,
     delta_time: Duration,
     input: &'a Input,
@@ -37,10 +38,13 @@ impl System for MovementSystem {
         input: &Input,
         delta_time: Duration,
     ) {
-        for (_, (position, movement)) in world.query_mut::<(&mut Position, &mut Movement)>() {
+        for (_, (position, movement, light)) in
+            world.query_mut::<(&mut Position, &mut Movement, &mut Light)>()
+        {
             let mut ctx = MovementContext {
                 position,
                 movement,
+                light,
                 tilemap: &resources.tilemap,
                 delta_time,
                 input,
@@ -56,7 +60,7 @@ fn handle_movement(ctx: &mut MovementContext) {
         && will_reach_next_tile_in_next_update(ctx)
     {
         ctx.movement.is_moving = false;
-        snap_to_grid(ctx.position);
+        snap_to_grid(ctx.position, ctx.light);
 
         if ctx.input.none() {
             ctx.movement.start_delay = Duration::ZERO;
@@ -96,13 +100,15 @@ fn handle_movement(ctx: &mut MovementContext) {
     } else {
         ctx.movement.is_moving = false;
         ctx.movement.idle_timer += ctx.delta_time;
-        snap_to_grid(ctx.position);
+        snap_to_grid(ctx.position, ctx.light);
     }
 }
 
-fn snap_to_grid(position: &mut Position) {
+fn snap_to_grid(position: &mut Position, light: &mut Light) {
     position.x = (position.x / TILE_SIZE as f32).round() * TILE_SIZE as f32;
     position.y = (position.y / TILE_SIZE as f32).round() * TILE_SIZE as f32;
+
+    light.position = *position;
 }
 
 fn will_reach_next_tile_in_next_update(ctx: &MovementContext) -> bool {
@@ -117,6 +123,7 @@ fn will_reach_next_tile_in_next_update(ctx: &MovementContext) -> bool {
 
 fn apply_movement(ctx: &mut MovementContext) {
     *ctx.position = next_position(ctx);
+    ctx.light.position = *ctx.position;
 }
 
 fn is_on_grid(position: &Vec2) -> bool {

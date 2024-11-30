@@ -1,4 +1,8 @@
+use pixels_engine::components::Light;
 use pixels_engine::components::Player;
+use pixels_engine::resource::LightMap;
+use pixels_engine::systems::light_render::LightRenderSystem;
+use pixels_engine::vec2::Vec2;
 use pixels_engine::SCALE_FACTOR;
 
 use hecs::World;
@@ -27,6 +31,7 @@ use pixels_engine::tile::CurrentLevelId;
 use pixels_engine::tile::TileMap;
 use pixels_engine::SCREEN_HEIGHT;
 use pixels_engine::SCREEN_WIDTH;
+use pixels_engine::TILE_SIZE;
 use std::time::Duration;
 use winit::window::Window;
 
@@ -50,7 +55,22 @@ impl Application {
             Position::new(player_starting_position.x, player_starting_position.y),
             Movement::new(48.0),
             Player,
+            Light::new(
+                Vec2::new(player_starting_position.x, player_starting_position.y),
+                80.0, // larger radius for player light
+                1.0,
+                [0.8, 0.8, 1.0], // slightly blue tint
+            ),
         ));
+        world.spawn((Light::new(
+            Vec2::new(
+                player_starting_position.x - 5.0 * TILE_SIZE as f32,
+                player_starting_position.y,
+            ),
+            40.0,
+            1.0,
+            [0.8, 0.8, 1.0], // slightly blue tint
+        ),));
 
         Self {
             systems: Self::set_up_systems(),
@@ -66,6 +86,7 @@ impl Application {
                 current_level_id: CurrentLevelId(tilemap.initial_level_id()),
                 tilemap,
                 screen_transition: ScreenTransition::default(),
+                light_map: LightMap::default(),
             },
         }
     }
@@ -83,6 +104,7 @@ impl Application {
         systems.add(TileRenderSystem);
         systems.add(SpriteRenderSystem);
         systems.add(LevelTransitionSystem);
+        systems.add(LightRenderSystem);
 
         systems
     }

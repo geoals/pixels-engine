@@ -31,7 +31,7 @@ fn main() -> Result<(), Error> {
 
     let mut application = Application::new(&window);
 
-    let mut fps_counter = FpsCounter::new(240);
+    let mut fps_counter = FpsCounter::new(24000);
 
     event_loop.run(move |event, _, control_flow| match event {
         Event::WindowEvent { event, .. } if !application.process_input_events(&event) => {

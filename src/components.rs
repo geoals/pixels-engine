@@ -4,6 +4,7 @@ use crate::input::Input;
 use crate::movement_util::{Axis, Direction};
 
 use crate::vec2::Vec2;
+use crate::TILE_SIZE;
 
 #[derive(Debug, Default)]
 pub struct AnimatedSprite {
@@ -118,3 +119,25 @@ impl Movement {
 
 pub struct Player;
 pub struct PlayerStartingPosition(pub Position);
+
+pub struct Light {
+    pub position: Vec2,
+    pub radius: f32,
+    pub intensity: f32,
+    pub color: [f32; 3], // RGB color of the light
+}
+
+impl Light {
+    pub fn new(position: Vec2, radius: f32, intensity: f32, color: [f32; 3]) -> Self {
+        Self {
+            position,
+            radius,
+            intensity,
+            color,
+        }
+    }
+
+    pub fn position(&self) -> Vec2 {
+        self.position + Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0)
+    }
+}
