@@ -10,9 +10,9 @@ use crate::{
 
 use super::System;
 
-pub struct AnimationSystem;
+pub struct CharacterAnimationSystem;
 
-impl System for AnimationSystem {
+impl System for CharacterAnimationSystem {
     fn update(
         &self,
         hecs_world: &mut hecs::World,

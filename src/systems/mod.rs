@@ -4,8 +4,8 @@ use pixels::Pixels;
 
 use crate::{input::Input, resource::Resources};
 
-pub mod animation;
 pub mod camera;
+pub mod character_animation;
 pub mod debug_grid;
 pub mod level_transition;
 pub mod movement;

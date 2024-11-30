@@ -11,7 +11,7 @@
 	"iid": "beb4bf10-9b00-11ef-b3a2-836b9f6d7bef",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 481209,
-	"nextUid": 28,
+	"nextUid": 29,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -454,6 +454,28 @@
 				"opaqueTiles": "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
 				"averageColors": "f973f873f876fa84f767f862f862f862f862fa96f6a3f6a3f6a3f6a3f693f693f877f775fbaafa84f667f986fba6fba6fba6fba6f6a3f9e4f9e4f9e4f593f593fba6fba6fba6f984fba6fba6fba6fba6fba6fba6f6a3f9e4f9e4f9e4f9e4f8a3fba6fba6fba6f862fa95fa84fa84fa95fba6fba6f9e4f9e4f9e4f9e4f9e4f8a3fba6fba6fba6fba6fa95fa84f983fa95fba6fba6f9e4f9e4f9e4f9e4f9e4f8a3fba6fba6fba6fba6fba6fa95fa95fba6fba6fba6f9b4f9e4f9b4f9b4f9b4f894fba6fba6fba6fba6fba6fba6fba6fba6fba6fba6f8c3f8c3f8c3f8c3f8c3f8c3fba6fba6fba6fba6fba6fba6ff77ff77fba6fba6f8c3f8c3f8c3f8c3f8c3f8c3f222f693f693f693f9e4f9e4fdfdfdfdf9c6f9e4f9e4f9e4f9e4f9e4f9e4f6a3f593f593f593f593f9e4f9e4fdfdfdfdf9a5f9b4f9b4f9e4f9b4f9b4f6a3f6a3f693f693f693f693f8c3f8c3fdfdfdfdfdfdfdfdfdfdfdfdf9e4f9e4f9e4f9e4f593f593f593f593f8c3f8c3fdfdfdfdfdfdfdfdfdfdfdfdf9e4f9e4f9e4f9e4"
 			}
+		},
+		{
+			"__cWid": 11,
+			"__cHei": 111,
+			"identifier": "Characters_spritesheet",
+			"uid": 28,
+			"relPath": "characters_spritesheet.png",
+			"embedAtlas": null,
+			"pxWid": 187,
+			"pxHei": 1792,
+			"tileGridSize": 16,
+			"spacing": 0,
+			"padding": 10,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": {
+				"opaqueTiles": "111111111110000000000000000000000111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+				"averageColors": "fcccfdddfdddfdddfdddfdddfdddfdddfdddfdddfdddccaadba9ccaaccaadbaaccaacbaacbaaccaacbaaddccdc76dc65dc76db76db76cc76cc86bc86cc86bc86dcbafc76fc74fc76fc76fb88fd86fd86fb88fb96fba8fdccfc86fb76fc86fd86fd87fc99fd87fc9afba7f9a8fdddfc87fb76fc87fb88fb88fc88fc88fc88fc88fc87fcaafb87fb76fb87fb78fa89fb88fc87fb88fb88fb98fcbbfb87fb68fc87fc87fd88fd99fe86fb9afba7f9b8feddfd76fc74fd76fd75fd75fd75fd86fd76fd75fd86fdaafc86fc75fc86fc86fc86fc86fc86fc86fc86fc86fdbafc75fb63fc75fd85fc85fc85fc75fd75fd85fd75fda9f986fc64f986f886fa76f986fb86fc86fb75fc86fdaafb76fb64fb76fa75fa75fb75fc76fc76fb75fc75fdaafc86fc75fc86fb76fb75fb76fd86fd86fb76fd86fdbafc86fb74fc86fb76fa75fb76fc86fc86fc86fc86fcaafc86fb74fc86fb76fb76fb76fc86fc86fb76fc86fcaafc86fc74fc86fb75fb75fb75fc86fc86fc86fc86fcaafc76fb64fc76fc75fb75fc75fc76fc76fc76fc76fcaafc86fc74fc86fc86fdbbfeccfeccfeccfeccfeccfdccfc86fb74fc86fd86fecbfeccfeccfeccfeccfeccfddcfa96fc74fa96f996fa86fa96fb86fb86fb86fb86fcbafa86fb74fa86fa86fb76fb86fb86fb86fa86fb86fbbafc86fd74fc86fc75fc76fc76fc86fc86fc76fc76fcaafd86fc74fd86fd75fc75fd75fc86fc86fd75fc76fcaafc86fc75fc86fb75fa75fb76fd86fd86fc86fd86fdbafc86fc74fc86fb75fb75fc75fd86fd86fd86fd86fdaafc86fc75fc86fc86fc86fd86fd86fd86fd86fd86fdbafd75fc63fd75fd75fc75fd75fc74fd74fd74fd74fda9fc76fb64fc76fb75fa75fb76fc86fc86fc76fc86fcaafd86fc85fd86fc86fc86fc86fd86fd86fc86fd86fdbafd86fc74fd86fc86fc76fc86fc86fd86fc86fd86fdaafc86fc74fc86fb76fb76fc76fc86fc86fc76fc86fdaafc86fc75fc86fc96fc86fc96fc96fd86fd86fd86fdbafa76fa64fa76fa76fa76fa76fb76fb76fb76fb76fcaafb76fa64fb76fb75fa65fb75fb75fb75fb75fc75fcaafc86fc74fc86fc75fc75fc75fc76fc76fc75fc75fcaafc86fc75fc86fc86fc86fc86fd86fd86fc86fd86fdbafc86fc74fc86fc76fc76fc76fc86fd86fd86fd86fdaafc86fc75fc86fc86fc76fc86fd86fd86fd86fd86fdbafd86fd74fd86fd86fd86fd86fd86fd86fd86fd86fdaafd86fd74fd86fd76fd86fd86fd86fd86fd86fd86fdbafc86fc74fc86fb76fb75fc76fc86fc86fc76fc86fcaafc76fc64fc76fd75fd75fd75fd76fd86fd75fd86fdaafd86fc74fd86fc76fc76fc76fd86fd86fc76fd86fdaafc74fc62fc74fd74fc74fd74fc74fd74fd74fd74fda9fb77f677fb87fb87ffeefffffffffffffffffffffeeefc86fc74fc86fd75fd86fd87fd87fd87fd87fd87fdbafc86fb64fc86fc86ffedffeeffeeffeeffeeffeefeedfc76fc74fc76fb76fc98fc98fda8fba9fba8fba8fbcbfc76fc74fc76fb75fb75fb75fc76fc86fb75fc86fcbafd86fc74fd86fd75fd75fd75fd86fd86fd75fd85fdaafc86fb74fc86fb75fb75fb75fc86fc86fc76fc86fcaafc86fc74fc86fb76fb76fc76fc86fb76fb76fc76fcaafc86fb85fb96fb86fdbafdcbfecbfecbfecbfecbfdccf886fa75f896f896fcccfddcfddcfddcfddcfddcfcdcf887fb76f887f687f977f887fa87f987f977fa87fabaf898fb77f898f68af88af88afa88f998f98afa89fabaf898fb77f898f79af889f79afb97fa98fa88fa88fabaf7a6fb84f7a6f6a6f9a6f8a6fa96f996f996fa96fabafa86fd74fa86fb86fb86fa86fc86fc86fc86fc86fbbafb76fa64fb76fb75fa75fb75fc86fc86fb75fc86fcaaf885fb63f885f685f675f685fa85fa85f985fa85fabafd86fc75fd86fd75fd75fd75fd86fd86fd75fd86fdbaf996fc75f996f996f996f996f996f896f896f896fbbafa88fa77fa88f979f97afa79fa89fa89fa7afa89fcabf986fb75f986f887f887f887fb86fa86fa86fa86fbbafc86fc74fc86fc86fc76fc86fc86fd86fd86fd86fcaafb96fd75fb96fb96fd96fc96fc96fc96fc96fc96fcbaf796fb74f796f686f786f786fa86f996f986fa86fabaf797fb75f797f697f887f897fa96f996f887fa96fabaf997fc75f997f897fb77fa87fb86fb86fb87fb86fbbafa96fd75fa96fa96fc86fb96fc96fb96fc86fc96fbbaf986fc74f986fa96fb86fa96fb86fb96fb86fb86fbbafb86fc74fb86fb86fca9fca9fca9fcb9fcb9fcb9fccbfb86fc64fc86fc86feddfeeefeeefeeefeeefeeefdedf897fc76f897f687f976f886fa87fa87fa87fa86fabaf986fb75f986f986fa87fa97fb97fb97fb97fb97fbbafc86fd85fd86fd86ffeefffffffffffffffffffffeeefb74fa62fb74f964f964fa64fb74fb74fa64fb74fca9f986fc74f986f986fb76fb86fb86fb86fb86fb86fbbaf996fa85f996f986fa86f986f996f996f996f996fbbafcccfcccfcccfcccfdddfdddfdddfdddfdddfdddfdddfdcbfdbbfdbbfdbbfdcbfdcbfdcbfdcbfdcbfdcbfdccfe86fe84fe86fe86fe86fe86fe86fe86fe86fe86fdaafd86fd75fd86fd86fd86fd86fd86fc86fc86fc86fcbafc76fc64fc76fc75fd75fd75fd76fc86fc86fc86fcbafd86fd75fd86fd86fe86fd86fd86fd86fd86fd86fdaaf975f963f975fa74fa64fa74fb74fc64fc64fc64fda9fe86fd75fe86fd86fd86fd86fe86fe86fd86fe86fdbafc76fd64fd76fd76fd76fd86fd86fd86fe86fd86fdaafd75fd74fd86fc86fd86fd86fd86fc76fd86fd86fdbafc86fc75fd86fd86fd75fc75fc75fc75fd86fe86fdaafc86fc75fd86fd86fd86fd86fd86fd86fd86fd86fdbafc86fd74fd76fd76fd75fd75fc86fc86fd86fe86fdbafd86fd74fd86fd86fc76fd75fd86fd86fd86fd86fdaafd86fd74fd86fd86fd75fd75fd86fd86fd86fe86fdaafc86fd86fd86fc75fd87fc77fd86fd86fd86fd86fdbaf85bf96afb74f852fc89fd87fd97fd86fd86fc86fcbafd97fd97fc97fa86fc98fc88fd98fd87fd97fd97fdbafca8fc98fca8fca8fb98fc98fb9afbaafba9fbaafcbbfcccfdddfcccfcccfcccfdddfdddfdddfdddfdddfdddfca9fd98fda8fda9fb98fc98fc99fc98fc98fca9fdccfa96fc74fc96fb87fc86fa77fb76fc86fb76fb87fbaafcbafc98fbbafba9fa99faaafcaafbaafa98f986fbaafdcbfcbbfbcbfbcbfbcbfbcbfbcbfbcbfbbafaa9fccbfcccfdddfdddfcccfdddfdddfdddfdddfdddfdddfdddfc87fb88fb97fc87fb97fb97fba7fa97fa88f987fbaafdccfcccfcccfdccfdddfdddfdddfdddfdddfdddfdddfdbbfdddfdddfdddfdddfdddfdddfdddfdddfdddfdddfe96feeefeeefffffffffffffffffffffffffffffeeef8c8feeefeeefeeefffffffffffffffffffffffffeee"
+			}
 		}
 	], "enums": [{ "identifier": "WaterEdge", "uid": 9, "values": [{ "id": "WaterEdge", "tileRect": null, "color": 12470831 }], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }], "externalEnums": [], "levelFields": [] },
 	"levels": [
@@ -504,7 +526,7 @@
 					"entityInstances": [
 						{
 							"__identifier": "PlayerStart",
-							"__grid": [70,13],
+							"__grid": [74,13],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -513,9 +535,9 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 10,
-							"px": [1120,208],
+							"px": [1184,208],
 							"fieldInstances": [],
-							"__worldX": 256,
+							"__worldX": 320,
 							"__worldY": 144
 						},
 						{
@@ -784,86 +806,6 @@
 							"fieldInstances": [],
 							"__worldX": -432,
 							"__worldY": 32
-						},
-						{
-							"__identifier": "Entrance",
-							"__grid": [64,12],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FEAE34",
-							"iid": "5afd04e0-9b00-11ef-96df-f184d46988ad",
-							"width": 16,
-							"height": 16,
-							"defUid": 22,
-							"px": [1024,192],
-							"fieldInstances": [{ "__identifier": "Entity_ref", "__type": "EntityRef", "__value": {
-								"entityIid": "60f81600-9b00-11ef-96df-2bd9af67ca06",
-								"layerIid": "1dc07960-9b00-11ef-ab4f-6323203aa80d",
-								"levelIid": "beb4e620-9b00-11ef-b3a2-4b974565c23b",
-								"worldIid": "beb4bf11-9b00-11ef-b3a2-c3468f0a6521"
-							}, "__tile": null, "defUid": 23, "realEditorValues": [{
-								"id": "V_String",
-								"params": ["60f81600-9b00-11ef-96df-2bd9af67ca06"]
-							}] }],
-							"__worldX": 160,
-							"__worldY": 128
-						},
-						{
-							"__identifier": "Entrance",
-							"__grid": [68,16],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#FEAE34",
-							"iid": "5cc3bb20-9b00-11ef-96df-f781a15e66a4",
-							"width": 16,
-							"height": 16,
-							"defUid": 22,
-							"px": [1088,256],
-							"fieldInstances": [{ "__identifier": "Entity_ref", "__type": "EntityRef", "__value": {
-								"entityIid": "60947230-9b00-11ef-96df-6b20916de5de",
-								"layerIid": "1dc07960-9b00-11ef-ab4f-6323203aa80d",
-								"levelIid": "beb4e620-9b00-11ef-b3a2-4b974565c23b",
-								"worldIid": "beb4bf11-9b00-11ef-b3a2-c3468f0a6521"
-							}, "__tile": null, "defUid": 23, "realEditorValues": [{
-								"id": "V_String",
-								"params": ["60947230-9b00-11ef-96df-6b20916de5de"]
-							}] }],
-							"__worldX": 224,
-							"__worldY": 192
-						},
-						{
-							"__identifier": "Destination",
-							"__grid": [64,13],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#F77622",
-							"iid": "60947230-9b00-11ef-96df-6b20916de5de",
-							"width": 16,
-							"height": 16,
-							"defUid": 24,
-							"px": [1024,208],
-							"fieldInstances": [],
-							"__worldX": 160,
-							"__worldY": 144
-						},
-						{
-							"__identifier": "Destination",
-							"__grid": [68,17],
-							"__pivot": [0,0],
-							"__tags": [],
-							"__tile": null,
-							"__smartColor": "#F77622",
-							"iid": "60f81600-9b00-11ef-96df-2bd9af67ca06",
-							"width": 16,
-							"height": 16,
-							"defUid": 24,
-							"px": [1088,272],
-							"fieldInstances": [],
-							"__worldX": 224,
-							"__worldY": 208
 						}
 					]
 				},
