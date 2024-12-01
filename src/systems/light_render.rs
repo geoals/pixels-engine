@@ -79,7 +79,7 @@ fn render_light(light: &Light, light_map: &mut LightMap, camera: &Camera) {
     }
 }
 fn apply_lighting(frame: &mut [u8], light_map: &LightMap) {
-    let ambient_light = 0.2;
+    let ambient_light = 0.4;
 
     for y in 0..SCREEN_HEIGHT {
         for x in 0..SCREEN_WIDTH {

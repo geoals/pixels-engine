@@ -26,6 +26,10 @@ impl Vec2 {
             self
         }
     }
+
+    pub fn length(self) -> f32 {
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
 }
 
 impl Add for Vec2 {
