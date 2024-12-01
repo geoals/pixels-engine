@@ -121,23 +121,17 @@ pub struct Player;
 pub struct PlayerStartingPosition(pub Position);
 
 pub struct Light {
-    pub position: Vec2,
     pub radius: f32,
     pub intensity: f32,
     pub color: [f32; 3], // RGB color of the light
 }
 
 impl Light {
-    pub fn new(position: Vec2, radius: f32, intensity: f32, color: [f32; 3]) -> Self {
+    pub fn new(radius: f32, intensity: f32, color: [f32; 3]) -> Self {
         Self {
-            position,
             radius,
             intensity,
             color,
         }
-    }
-
-    pub fn position(&self) -> Vec2 {
-        self.position + Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0)
     }
 }

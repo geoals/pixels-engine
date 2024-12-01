@@ -9,11 +9,11 @@ pub struct TileRenderSystem;
 impl System for TileRenderSystem {
     fn update(
         &self,
-        _world: &mut hecs::World,
+        _: &mut hecs::World,
         resources: &mut Resources,
         pixels: &mut pixels::Pixels,
-        _input: &Input,
-        _delta_time: Duration,
+        _: &Input,
+        _: Duration,
     ) {
         let camera = &resources.camera;
         let tilemap = &resources.tilemap;

@@ -5,10 +5,10 @@ use pixels::Pixels;
 use super::System;
 use crate::{
     camera::Camera,
-    components::Light,
+    components::{Light, Position},
     input::Input,
     resource::{LightMap, Resources},
-    SCREEN_HEIGHT, SCREEN_WIDTH,
+    SCREEN_HEIGHT, SCREEN_WIDTH, TILE_SIZE,
 };
 
 pub struct LightRenderSystem;
@@ -16,31 +16,24 @@ pub struct LightRenderSystem;
 impl System for LightRenderSystem {
     fn update(
         &self,
-        world: &mut hecs::World,
+        _: &mut hecs::World,
         resources: &mut Resources,
         pixels: &mut Pixels,
-        _input: &Input,
-        _delta_time: Duration,
+        _: &Input,
+        _: Duration,
     ) {
-        // Clear the light map
-        resources.light_map.clear();
-
-        // Render each light source
-        for (_, light) in world.query::<&Light>().iter() {
-            render_light(light, &mut resources.light_map, &resources.camera);
-        }
-
-        // Apply lighting to the main frame buffer
-        apply_lighting(pixels.frame_mut(), &resources.light_map);
+        render_lighting(pixels.frame_mut(), &resources.light_map);
     }
 }
 
-fn render_light(light: &Light, light_map: &mut LightMap, camera: &Camera) {
-    let screen_pos = camera.world_to_screen(light.position());
+fn update_light(light: &Light, position: &Position, light_map: &mut LightMap, camera: &Camera) {
+    // Offsetting the position by half a tile size to center the light in the tile
+    let position_offset = Position::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0);
+    let screen_pos = camera.world_to_screen(*position + position_offset);
     let scaled_x = (screen_pos.x / light_map.scale as f32) as i32;
     let scaled_y = (screen_pos.y / light_map.scale as f32) as i32;
     let scaled_radius = (light.radius / light_map.scale as f32) as i32;
-    let solid_center = (light.radius / 5.0 / light_map.scale as f32) as i32; // 16px solid center scaled down
+    let solid_center = (light.radius / 3.0 / light_map.scale as f32) as i32;
 
     for y in -scaled_radius..=scaled_radius {
         let world_y = scaled_y + y;
@@ -78,8 +71,28 @@ fn render_light(light: &Light, light_map: &mut LightMap, camera: &Camera) {
         }
     }
 }
-fn apply_lighting(frame: &mut [u8], light_map: &LightMap) {
-    let ambient_light = 0.4;
+
+pub struct LightUpdateSystem;
+
+impl System for LightUpdateSystem {
+    fn update(
+        &self,
+        world: &mut hecs::World,
+        resources: &mut Resources,
+        _: &mut Pixels,
+        _: &Input,
+        _: Duration,
+    ) {
+        resources.light_map.clear();
+
+        for (_, (light, position)) in world.query::<(&Light, &Position)>().iter() {
+            update_light(light, position, &mut resources.light_map, &resources.camera);
+        }
+    }
+}
+
+fn render_lighting(frame: &mut [u8], light_map: &LightMap) {
+    let ambient_light = 0.1;
 
     for y in 0..SCREEN_HEIGHT {
         for x in 0..SCREEN_WIDTH {

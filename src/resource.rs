@@ -28,6 +28,7 @@ impl Default for LightMap {
         let scale = 1;
         let width = SCREEN_WIDTH / scale;
         let height = SCREEN_HEIGHT / scale;
+
         Self {
             buffer: vec![0; (width * height * 4) as usize],
             width,

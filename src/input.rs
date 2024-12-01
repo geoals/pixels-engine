@@ -7,6 +7,8 @@ use crate::movement_util::Direction;
 pub struct Input {
     direction_stack: VecDeque<Direction>,
     shift: bool,
+    j: bool,
+    k: bool,
 }
 
 impl Input {
@@ -41,6 +43,14 @@ impl Input {
                     }
                     VirtualKeyCode::D | VirtualKeyCode::Right => {
                         self.handle_direction_key(Direction::Right, is_pressed);
+                        true
+                    }
+                    VirtualKeyCode::J => {
+                        self.j = is_pressed;
+                        true
+                    }
+                    VirtualKeyCode::K => {
+                        self.k = is_pressed;
                         true
                     }
                     VirtualKeyCode::LShift => {
@@ -101,5 +111,12 @@ impl Input {
         self.direction_stack.clear();
         self.shift = false;
     }
-}
 
+    pub fn j(&self) -> bool {
+        self.j
+    }
+
+    pub fn k(&self) -> bool {
+        self.k
+    }
+}

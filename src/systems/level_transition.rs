@@ -5,6 +5,8 @@ use crate::{
     components::{Player, Position},
     resource::Resources,
     tile::{CurrentLevelId, TileMap},
+    vec2::Vec2,
+    TILE_SIZE,
 };
 
 const FADE_SPEED: f32 = 5.0;
@@ -101,6 +103,8 @@ impl System for LevelTransitionSystem {
                         resources.current_level_id.0 = destination_level_id;
                         for (_, position) in world.query_mut::<With<&mut Position, &Player>>() {
                             *position = destination_pos;
+                            let offset = Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0);
+                            resources.camera.set_position(*position + offset);
                         }
                         transition.state = TransitionPhase::FadingIn;
                     }

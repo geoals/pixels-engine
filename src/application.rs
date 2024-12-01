@@ -1,8 +1,9 @@
 use pixels_engine::components::Light;
 use pixels_engine::components::Player;
 use pixels_engine::resource::LightMap;
+use pixels_engine::systems::light_control::LightControlSystem;
 use pixels_engine::systems::light_render::LightRenderSystem;
-use pixels_engine::vec2::Vec2;
+use pixels_engine::systems::light_render::LightUpdateSystem;
 use pixels_engine::SCALE_FACTOR;
 
 use hecs::World;
@@ -54,12 +55,7 @@ impl Application {
             Position::new(player_starting_position.x, player_starting_position.y),
             Movement::new(48.0),
             Player,
-            Light::new(
-                Vec2::new(player_starting_position.x, player_starting_position.y),
-                115.0, // larger radius for player light
-                0.65,
-                [1.0, 1.0, 1.0], // slightly blue tint
-            ),
+            Light::new(115.0, 1.0, [1.0, 0.95, 0.9]),
         ));
 
         Self {
@@ -75,8 +71,8 @@ impl Application {
                 ),
                 current_level_id: CurrentLevelId(tilemap.initial_level_id()),
                 tilemap,
-                screen_transition: ScreenTransition::default(),
-                light_map: LightMap::default(),
+                screen_transition: Default::default(),
+                light_map: Default::default(),
             },
         }
     }
@@ -84,17 +80,21 @@ impl Application {
     fn set_up_systems() -> SystemContainer {
         let mut systems = SystemContainer::new();
 
-        systems.add(MovementSystem);
-        systems.add(CharacterAnimationSystem);
-        systems.add(TileAnimationSystem);
-        systems.add(CameraFollowSystem);
+        systems.add_update_system(MovementSystem);
+        systems.add_update_system(CharacterAnimationSystem);
+        systems.add_update_system(TileAnimationSystem);
+        systems.add_update_system(CameraFollowSystem);
+        systems.add_update_system(LightUpdateSystem);
+
+        systems.add_render_system(TileRenderSystem);
+        systems.add_render_system(SpriteRenderSystem);
+        systems.add_render_system(LightRenderSystem);
+        systems.add_render_system(LevelTransitionSystem);
+
         if cfg!(feature = "debug") {
-            systems.add(DebugGridSystem);
+            systems.add_update_system(DebugGridSystem);
+            systems.add_update_system(LightControlSystem);
         }
-        systems.add(TileRenderSystem);
-        systems.add(SpriteRenderSystem);
-        systems.add(LevelTransitionSystem);
-        systems.add(LightRenderSystem);
 
         systems
     }
@@ -117,7 +117,20 @@ impl Application {
     }
 
     pub fn update(&mut self) {
-        for system in self.systems.all() {
+        if self.systems.should_update(self.delta_time) {
+            let fixed_delta_time = self.systems.get_fixed_delta_time();
+            for system in self.systems.get_update_systems() {
+                system.update(
+                    &mut self.world,
+                    &mut self.resources,
+                    &mut self.pixels,
+                    &self.input,
+                    fixed_delta_time,
+                );
+            }
+        }
+
+        for system in self.systems.get_render_systems() {
             system.update(
                 &mut self.world,
                 &mut self.resources,
@@ -129,7 +142,7 @@ impl Application {
     }
 
     pub fn draw(&mut self) {
-        self.pixels.render().unwrap();
+        self.pixels.render().expect("Should draw the pixel buffer to screen");
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {
