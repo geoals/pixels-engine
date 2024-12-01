@@ -2,7 +2,8 @@ use hecs::{With, World};
 
 use super::System;
 use crate::{
-    components::{Player, Position},
+    components::{Movement, Player, Position},
+    movement_util::Direction,
     resource::Resources,
     tile::{CurrentLevelId, TileMap},
     vec2::Vec2,
@@ -26,6 +27,7 @@ enum TransitionPhase {
     FadingOut {
         destination_level_id: String,
         destination_pos: Position,
+        direction: Direction,
     },
     FadingIn,
 }
@@ -78,18 +80,20 @@ impl System for LevelTransitionSystem {
 
         match transition.state.clone() {
             TransitionPhase::None => {
-                if let Some((destination_level_id, destination_pos)) =
+                if let Some((destination_level_id, destination_pos, direction)) =
                     detect_transition(world, &resources.tilemap, &resources.current_level_id)
                 {
                     transition.state = TransitionPhase::FadingOut {
                         destination_level_id,
                         destination_pos,
+                        direction,
                     };
                 }
             }
             TransitionPhase::FadingOut {
                 destination_level_id,
                 destination_pos,
+                direction,
             } => {
                 if should_update_fade {
                     transition.fade_alpha += FADE_SPEED * FADE_UPDATE_INTERVAL;
@@ -101,8 +105,11 @@ impl System for LevelTransitionSystem {
                         // TODO: split up actual level change and visual transition stuff
                         // to separate places
                         resources.current_level_id.0 = destination_level_id;
-                        for (_, position) in world.query_mut::<With<&mut Position, &Player>>() {
+                        for (_, (position, movement)) in
+                            world.query_mut::<With<(&mut Position, &mut Movement), &Player>>()
+                        {
                             *position = destination_pos;
+                            movement.direction = direction;
                             let offset = Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0);
                             resources.camera.set_position(*position + offset);
                         }
@@ -135,7 +142,7 @@ fn detect_transition(
     world: &mut World,
     tilemap: &TileMap,
     current_level_id: &CurrentLevelId,
-) -> Option<(String, Position)> {
+) -> Option<(String, Position, Direction)> {
     let current_level = tilemap.get_level(current_level_id);
     let tiles = &current_level.tiles;
 
@@ -143,7 +150,11 @@ fn detect_transition(
         let tile = position.aligned_tile()?;
         if let Some(transition) = &tiles[&(tile.0, tile.1)].transition {
             if let Some(destination) = tilemap.entities.get(&transition.destination) {
-                return Some((destination.level_id.clone(), destination.position));
+                return Some((
+                    destination.level_id.clone(),
+                    destination.position,
+                    destination.direction.expect("Destination entity should have a direction"),
+                ));
             }
         }
     }

@@ -4,6 +4,7 @@ use pixels_engine::resource::LightMap;
 use pixels_engine::systems::light_control::LightControlSystem;
 use pixels_engine::systems::light_render::LightRenderSystem;
 use pixels_engine::systems::light_render::LightUpdateSystem;
+use pixels_engine::vec2::Vec2;
 use pixels_engine::SCALE_FACTOR;
 
 use hecs::World;
@@ -32,6 +33,7 @@ use pixels_engine::tile::CurrentLevelId;
 use pixels_engine::tile::TileMap;
 use pixels_engine::SCREEN_HEIGHT;
 use pixels_engine::SCREEN_WIDTH;
+use pixels_engine::TILE_SIZE;
 use std::time::Duration;
 use winit::window::Window;
 
@@ -47,15 +49,21 @@ pub struct Application {
 impl Application {
     pub fn new(window: &Window) -> Self {
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
-        let player_starting_position = tilemap.player_starting_position;
+        let player_pos = tilemap.player_starting_position;
+
+        let camera = Camera::new(
+            player_pos + Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0),
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
+        );
 
         let mut world = hecs::World::new();
         world.spawn((
             AnimatedSprite::new(SpriteType::Player),
-            Position::new(player_starting_position.x, player_starting_position.y),
+            Position::new(player_pos.x, player_pos.y),
             Movement::new(48.0),
             Player,
-            Light::new(115.0, 1.0, [1.0, 0.95, 0.9]),
+            Light::new(115.0, 1.0, [1.0, 1.0, 1.0]),
         ));
 
         Self {
@@ -65,7 +73,7 @@ impl Application {
             delta_time: Duration::ZERO,
             world,
             resources: Resources {
-                camera: Camera::new(SCREEN_WIDTH, SCREEN_HEIGHT),
+                camera,
                 character_spritesheet: CharacterSpritesheet(
                     Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
                 ),
@@ -88,7 +96,7 @@ impl Application {
 
         systems.add_render_system(TileRenderSystem);
         systems.add_render_system(SpriteRenderSystem);
-        systems.add_render_system(LightRenderSystem);
+        // systems.add_render_system(LightRenderSystem);
         systems.add_render_system(LevelTransitionSystem);
 
         if cfg!(feature = "debug") {

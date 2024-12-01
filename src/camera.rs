@@ -10,9 +10,9 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(viewport_width: u32, viewport_height: u32) -> Self {
+    pub fn new(position: Vec2, viewport_width: u32, viewport_height: u32) -> Self {
         Self {
-            position: Vec2::ZERO,
+            position,
             viewport_width,
             viewport_height,
         }

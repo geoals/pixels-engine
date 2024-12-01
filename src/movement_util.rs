@@ -64,6 +64,16 @@ impl Direction {
             _ => 0,
         }
     }
+
+    pub fn from_str(string: &str) -> Result<Self, String> {
+        match string {
+            "Up" => Ok(Direction::Up),
+            "Down" => Ok(Direction::Down),
+            "Left" => Ok(Direction::Left),
+            "Right" => Ok(Direction::Right),
+            _ => Err(format!("Invalid direction: {}", string)),
+        }
+    }
 }
 
 #[derive(PartialEq, Debug)]

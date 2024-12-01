@@ -1,4 +1,4 @@
-use crate::{ivec2::IVec2, vec2::Vec2, TILE_SIZE};
+use crate::{ivec2::IVec2, movement_util::Direction, vec2::Vec2, TILE_SIZE};
 use ldtk2::Ldtk;
 use std::{collections::HashMap, time::Duration};
 
@@ -20,6 +20,7 @@ pub struct Level {
     pub tileset_width: u32,
     pub tileset_height: u32,
     pub level_id: String,
+    pub indoors: bool,
 }
 
 type EntityId = String;
@@ -28,6 +29,7 @@ type EntityId = String;
 pub struct EntityInstance {
     pub position: Vec2,
     pub level_id: String,
+    pub direction: Option<Direction>,
 }
 
 #[derive(Debug)]
@@ -98,7 +100,7 @@ impl TileMap {
             .unwrap()
             .tile_grid_size;
 
-        let player_starting_position = Self::get_player_start_position(first_level)?;
+        let player_start = Self::get_player_start(&ldtk.levels)?;
 
         let mut levels = HashMap::new();
         for level_data in &ldtk.levels {
@@ -110,32 +112,35 @@ impl TileMap {
 
         Ok(TileMap {
             levels,
-            initial_level_id: ldtk.levels[0].iid.clone(),
+            initial_level_id: player_start.1,
             tilesize,
-            player_starting_position,
+            player_starting_position: player_start.0,
             entities,
         })
     }
 
-    fn get_player_start_position(level: &ldtk2::Level) -> Result<Vec2, Box<dyn std::error::Error>> {
-        let entities_layer = level
-            .layer_instances
-            .as_ref()
-            .ok_or("No layers in tile data")?
-            .iter()
-            .find(|layer| layer.identifier == "Entities")
-            .ok_or("Could not find Entities layer")?;
-
-        let player_start = entities_layer
-            .entity_instances
-            .iter()
-            .find(|entity| entity.identifier == "PlayerStart")
-            .ok_or("Could not find PlayerStart entity")?;
-
-        Ok(Vec2::new(
-            player_start.px[0] as f32,
-            player_start.px[1] as f32,
-        ))
+    fn get_player_start(
+        levels: &[ldtk2::Level],
+    ) -> Result<(Vec2, String), Box<dyn std::error::Error>> {
+        for level in levels {
+            if let Some(layers) = &level.layer_instances {
+                if let Some(entities_layer) =
+                    layers.iter().find(|layer| layer.identifier == "Entities")
+                {
+                    if let Some(player_start) = entities_layer
+                        .entity_instances
+                        .iter()
+                        .find(|entity| entity.identifier == "PlayerStart")
+                    {
+                        return Ok((
+                            Vec2::new(player_start.px[0] as f32, player_start.px[1] as f32),
+                            level.iid.clone(),
+                        ));
+                    }
+                }
+            }
+        }
+        Err("Could not find PlayerStart entity in any level".into())
     }
 
     fn load_level(
@@ -234,6 +239,9 @@ impl TileMap {
             tileset_width: tileset_img.width(),
             tileset_height: tileset_img.height(),
             level_id: level_data.iid.clone(),
+            indoors: level_data.field_instances.iter().any(|field| {
+                field.identifier == "indoors" && field.value.as_ref().unwrap() == true
+            }),
         })
     }
 
@@ -255,6 +263,7 @@ impl TileMap {
                 let entity_instance = EntityInstance {
                     position: Vec2::new(entity.px[0] as f32, entity.px[1] as f32),
                     level_id: level.iid.clone(),
+                    direction: get_direction_for_destination_entity(entity),
                 };
 
                 entities.insert(entity.iid.clone(), entity_instance);
@@ -271,6 +280,22 @@ impl TileMap {
     pub fn initial_level_id(&self) -> String {
         self.initial_level_id.clone()
     }
+}
+
+// TODO: refactor so that not all EntityInstace has direction field when it only applies to
+// Destination entity
+fn get_direction_for_destination_entity(entity: &ldtk2::EntityInstance) -> Option<Direction> {
+    if entity.identifier != "Destination" {
+        return None;
+    }
+
+    entity.field_instances.iter().find_map(|field| {
+        if field.identifier == "Direction" {
+            Some(Direction::from_str(field.value.to_owned().unwrap().as_str().unwrap()).unwrap())
+        } else {
+            None
+        }
+    })
 }
 
 /// tile custom data must contain animation data on this format:

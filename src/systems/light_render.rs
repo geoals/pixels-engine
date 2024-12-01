@@ -22,6 +22,11 @@ impl System for LightRenderSystem {
         _: &Input,
         _: Duration,
     ) {
+        let indoors = resources.tilemap.levels[&resources.current_level_id.0].indoors;
+        if indoors {
+            return;
+        }
+
         render_lighting(pixels.frame_mut(), &resources.light_map);
     }
 }
@@ -33,7 +38,7 @@ fn update_light(light: &Light, position: &Position, light_map: &mut LightMap, ca
     let scaled_x = (screen_pos.x / light_map.scale as f32) as i32;
     let scaled_y = (screen_pos.y / light_map.scale as f32) as i32;
     let scaled_radius = (light.radius / light_map.scale as f32) as i32;
-    let solid_center = (light.radius / 3.0 / light_map.scale as f32) as i32;
+    let solid_center = (light.radius / 12.0 / light_map.scale as f32) as i32;
 
     for y in -scaled_radius..=scaled_radius {
         let world_y = scaled_y + y;
