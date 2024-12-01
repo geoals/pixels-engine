@@ -61,13 +61,14 @@ impl Application {
             SCREEN_HEIGHT,
         );
 
+        // Player entity
         let mut world = hecs::World::new();
         world.spawn((
             AnimatedSprite::new(SpriteType::Player),
             Position::new(player_pos.x, player_pos.y),
             Movement::new(48.0),
             Player,
-            Light::new(115.0, 1.0, [1.0, 1.0, 1.0]),
+            Light::new(115.0, 0.3, [0.6, 0.6, 1.0]),
             FireSpell,
         ));
 
@@ -106,7 +107,7 @@ impl Application {
         systems.add_render_system(TileRenderSystem);
         systems.add_render_system(SpriteRenderSystem);
         systems.add_render_system(SpellEffectRenderSystem);
-        // systems.add_render_system(LightRenderSystem);
+        systems.add_render_system(LightRenderSystem);
         systems.add_render_system(LevelTransitionSystem);
 
         if cfg!(feature = "debug") {

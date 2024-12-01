@@ -88,6 +88,11 @@ impl System for LightUpdateSystem {
         _: &Input,
         _: Duration,
     ) {
+        let indoors = resources.tilemap.levels[&resources.current_level_id.0].indoors;
+        if indoors {
+            return;
+        }
+
         resources.light_map.clear();
 
         for (_, (light, position)) in world.query::<(&Light, &Position)>().iter() {
@@ -97,7 +102,7 @@ impl System for LightUpdateSystem {
 }
 
 fn render_lighting(frame: &mut [u8], light_map: &LightMap) {
-    let ambient_light = 0.1;
+    let ambient_light = [0.10, 0.10, 0.15]; // Lower R&G, higher B
 
     for y in 0..SCREEN_HEIGHT {
         for x in 0..SCREEN_WIDTH {
@@ -109,7 +114,7 @@ fn render_lighting(frame: &mut [u8], light_map: &LightMap) {
             for i in 0..3 {
                 let light_level = light_map.buffer[light_idx + i] as f32 / 255.0;
                 let color = frame[frame_idx + i] as f32 / 255.0;
-                let lit_color = color * (ambient_light + light_level);
+                let lit_color = color * (ambient_light[i] + light_level);
                 frame[frame_idx + i] = (lit_color * 255.0) as u8;
             }
             // Don't modify alpha

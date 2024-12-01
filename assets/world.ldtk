@@ -533,7 +533,7 @@
 			"tags": [],
 			"tagsSourceEnumUid": null,
 			"enumTags": [],
-			"customData": [{ "tileId": 0, "data": "animationFrames:0,1,2,3,4,5,6,7,8,9,10\nframeTime:60" }],
+			"customData": [{ "tileId": 0, "data": "animationFrames:0,1,2,3,4,5,6,7,8,9,10\nframeTime:80" }],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "00000000000", "averageColors": "0d621da33d934d935d936d836c525a33382326240624" }
 		}
@@ -917,6 +917,22 @@
 							"fieldInstances": [{ "__identifier": "Direction", "__type": "LocalEnum.Direction", "__value": "Down", "__tile": null, "defUid": 31, "realEditorValues": [] }],
 							"__worldX": -432,
 							"__worldY": 32
+						},
+						{
+							"__identifier": "PlayerStart",
+							"__grid": [71,13],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#BE4A2F",
+							"iid": "4325bf70-9b00-11ef-a330-7781938e927b",
+							"width": 16,
+							"height": 16,
+							"defUid": 10,
+							"px": [1136,208],
+							"fieldInstances": [],
+							"__worldX": 272,
+							"__worldY": 144
 						}
 					]
 				},

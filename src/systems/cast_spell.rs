@@ -1,7 +1,7 @@
 use hecs::{With, World};
 
 use crate::{
-    components::{FireSpell, Movement, Position, SpellEffect, SpellEffectType},
+    components::{FireSpell, Light, Movement, Position, SpellEffect, SpellEffectType},
     movement_util::Direction,
     vec2::Vec2,
     TILE_SIZE,
@@ -46,7 +46,7 @@ pub fn cast_spell(
     caster_direction: Direction,
     spell_type: SpellEffectType,
 ) {
-    for i in 1..=5 {
+    for i in 1..=4 {
         let offset =
             caster_direction.to_vector() * (TILE_SIZE as f32 * i as f32) + Vec2::new(0.0, -4.0);
         let effect_position = caster_position + offset;
@@ -54,6 +54,7 @@ pub fn cast_spell(
         world.spawn((
             SpellEffect::new(spell_type),
             Position::new(effect_position.x, effect_position.y),
+            Light::new(60.0, 0.07, [1.0, 0.8, 0.7]),
         ));
     }
 }
