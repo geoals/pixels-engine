@@ -5,12 +5,14 @@ use pixels::Pixels;
 use crate::{input::Input, resource::Resources};
 
 pub mod camera;
+pub mod cast_spell;
 pub mod character_animation;
 pub mod debug_grid;
 pub mod level_transition;
 pub mod light_control;
 pub mod light_render;
 pub mod movement;
+pub mod spell_effect;
 pub mod sprite_render;
 pub mod tile_animation;
 pub mod tile_render;

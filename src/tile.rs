@@ -316,12 +316,16 @@ fn read_animation_data(
         .1
         .split(',')
         .map(|id| {
-            let id_u32 = id.parse::<u32>().expect("Failed to parse tile id");
+            let id_u32 = id.parse::<u32>().expect("Tile id in animationTiles should be a number");
             tile_id_to_position(id_u32, tileset_width)
         })
         .collect::<Vec<IVec2>>();
-    let frame_time =
-        custom_data_lines[1].split_once(":")?.1.parse::<u64>().expect("Failed to parse frame time");
+
+    let frame_time = custom_data_lines[1]
+        .split_once(":")?
+        .1
+        .parse::<u64>()
+        .expect("Frametime in animation should be a number");
 
     let tile_animation = TileAnimation::new(animation_frames, Duration::from_millis(frame_time));
 

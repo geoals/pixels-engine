@@ -43,6 +43,6 @@ fn animation_frame_duration(input: &Input) -> f32 {
     if input.shift() {
         0.075
     } else {
-        0.15
+        0.125
     }
 }

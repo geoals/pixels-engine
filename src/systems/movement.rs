@@ -139,7 +139,7 @@ fn is_traversable(ctx: &MovementContext) -> bool {
 }
 
 fn next_position(ctx: &MovementContext) -> Vec2 {
-    let movement_speed_multiplier = if ctx.input.shift() { 3.0 } else { 1.0 };
+    let movement_speed_multiplier = if ctx.input.shift() { 2.5 } else { 1.5 };
     let movement_vector = ctx.movement.direction.to_vector();
     let movement_step = movement_vector
         * ctx.movement.speed

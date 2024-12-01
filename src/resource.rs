@@ -1,6 +1,6 @@
 use crate::{
     camera::Camera,
-    spritesheet::CharacterSpritesheet,
+    spritesheet::{CharacterSpritesheet, EffectsSpritesheet},
     systems::level_transition::ScreenTransition,
     tile::{CurrentLevelId, TileMap},
     SCREEN_HEIGHT, SCREEN_WIDTH,
@@ -9,6 +9,7 @@ use crate::{
 pub struct Resources {
     pub camera: Camera,
     pub character_spritesheet: CharacterSpritesheet,
+    pub effects_spritesheet: EffectsSpritesheet,
     // TODO : move this back into tilemap struct
     pub current_level_id: CurrentLevelId,
     pub tilemap: TileMap,

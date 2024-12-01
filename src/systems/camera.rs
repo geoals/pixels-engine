@@ -26,7 +26,7 @@ impl System for CameraFollowSystem {
     ) {
         let camera = &mut resources.camera;
         let offset = Vec2::new((TILE_SIZE / 2) as f32, TILE_SIZE as f32 / 2.0);
-        let dead_zone = TILE_SIZE as f32 * 2.0;
+        let dead_zone = TILE_SIZE as f32 * 2.5;
 
         for (_, position) in world.query_mut::<With<&Position, &Player>>() {
             let target_pos = *position + offset;

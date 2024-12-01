@@ -1,3 +1,4 @@
+use lazy_static::lazy_static;
 use std::time::Duration;
 
 use crate::input::Input;
@@ -134,4 +135,40 @@ impl Light {
             color,
         }
     }
+}
+
+pub struct FireSpell;
+
+#[derive(Debug, Clone)]
+pub struct SpellEffect {
+    pub effect_type: SpellEffectType,
+    pub current_frame: usize,
+    pub frame_time: f32,
+    pub is_finished: bool,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SpellEffectType {
+    Fireball,
+}
+
+impl SpellEffect {
+    pub fn new(effect_type: SpellEffectType) -> Self {
+        Self {
+            effect_type,
+            current_frame: 0,
+            frame_time: 0.0,
+            is_finished: false,
+        }
+    }
+
+    pub fn get_sprite_frames(&self) -> &[(u32, u32)] {
+        match self.effect_type {
+            SpellEffectType::Fireball => FIREBALL_FRAMES.as_slice(),
+        }
+    }
+}
+
+lazy_static! {
+    static ref FIREBALL_FRAMES: Vec<(u32, u32)> = (0..176).step_by(16).map(|x| (x, 0)).collect();
 }

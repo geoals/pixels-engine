@@ -1,9 +1,13 @@
+use pixels_engine::components::FireSpell;
 use pixels_engine::components::Light;
 use pixels_engine::components::Player;
 use pixels_engine::resource::LightMap;
+use pixels_engine::spritesheet::EffectsSpritesheet;
+use pixels_engine::systems::cast_spell::CastSpellSystem;
 use pixels_engine::systems::light_control::LightControlSystem;
 use pixels_engine::systems::light_render::LightRenderSystem;
 use pixels_engine::systems::light_render::LightUpdateSystem;
+use pixels_engine::systems::spell_effect::SpellEffectRenderSystem;
 use pixels_engine::vec2::Vec2;
 use pixels_engine::SCALE_FACTOR;
 
@@ -64,6 +68,7 @@ impl Application {
             Movement::new(48.0),
             Player,
             Light::new(115.0, 1.0, [1.0, 1.0, 1.0]),
+            FireSpell,
         ));
 
         Self {
@@ -76,6 +81,9 @@ impl Application {
                 camera,
                 character_spritesheet: CharacterSpritesheet(
                     Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
+                ),
+                effects_spritesheet: EffectsSpritesheet(
+                    Spritesheet::new("./assets/effects.png", 16, 16).unwrap(),
                 ),
                 current_level_id: CurrentLevelId(tilemap.initial_level_id()),
                 tilemap,
@@ -93,9 +101,11 @@ impl Application {
         systems.add_update_system(TileAnimationSystem);
         systems.add_update_system(CameraFollowSystem);
         systems.add_update_system(LightUpdateSystem);
+        systems.add_update_system(CastSpellSystem);
 
         systems.add_render_system(TileRenderSystem);
         systems.add_render_system(SpriteRenderSystem);
+        systems.add_render_system(SpellEffectRenderSystem);
         // systems.add_render_system(LightRenderSystem);
         systems.add_render_system(LevelTransitionSystem);
 

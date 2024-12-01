@@ -5,6 +5,7 @@ use image::{DynamicImage, GenericImageView};
 use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 pub struct CharacterSpritesheet(pub Spritesheet);
+pub struct EffectsSpritesheet(pub Spritesheet);
 
 pub struct Spritesheet {
     image: DynamicImage,

@@ -9,6 +9,7 @@ pub struct Input {
     shift: bool,
     j: bool,
     k: bool,
+    space: bool,
 }
 
 impl Input {
@@ -51,6 +52,10 @@ impl Input {
                     }
                     VirtualKeyCode::K => {
                         self.k = is_pressed;
+                        true
+                    }
+                    VirtualKeyCode::Space => {
+                        self.space = is_pressed;
                         true
                     }
                     VirtualKeyCode::LShift => {
@@ -118,5 +123,9 @@ impl Input {
 
     pub fn k(&self) -> bool {
         self.k
+    }
+
+    pub fn space(&self) -> bool {
+        self.space
     }
 }
