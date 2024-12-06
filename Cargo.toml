@@ -13,6 +13,8 @@ lazy_static = "1.5.0"
 ldtk2 = "0.8.0"
 pixels = "0.14.0"
 winit = "0.28.6"
+bytemuck = { version = "1.14", features = ["derive"] }
+wgpu = "0.17.2"
 
 [features]
 debug = []

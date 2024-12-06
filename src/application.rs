@@ -1,6 +1,7 @@
 use pixels_engine::components::FireSpell;
 use pixels_engine::components::Light;
 use pixels_engine::components::Player;
+use pixels_engine::renderer::NoiseRenderer;
 use pixels_engine::resource::LightMap;
 use pixels_engine::spritesheet::EffectsSpritesheet;
 use pixels_engine::systems::cast_spell::CastSpellSystem;
@@ -48,6 +49,7 @@ pub struct Application {
     input: Input,
     pixels: Pixels,
     pub delta_time: Duration,
+    custom_renderer: NoiseRenderer,
 }
 
 impl Application {
@@ -72,10 +74,13 @@ impl Application {
             FireSpell,
         ));
 
+        let pixels = Self::set_up_pixels_frame_buffer(window);
+        let custom_renderer = NoiseRenderer::new(&pixels, SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
+
         Self {
             systems: Self::set_up_systems(),
             input: Input::new(),
-            pixels: Self::set_up_pixels_frame_buffer(window),
+            pixels,
             delta_time: Duration::ZERO,
             world,
             resources: Resources {
@@ -91,6 +96,7 @@ impl Application {
                 screen_transition: Default::default(),
                 light_map: Default::default(),
             },
+            custom_renderer,
         }
     }
 
@@ -161,7 +167,22 @@ impl Application {
     }
 
     pub fn draw(&mut self) {
-        self.pixels.render().expect("Should draw the pixel buffer to screen");
+        let render_result = self.pixels.render_with(|encoder, render_target, context| {
+            context.scaling_renderer.render(encoder, render_target);
+
+            // render the GPU content to the render target
+            self.custom_renderer.render(
+                encoder,
+                render_target, // This has RENDER_ATTACHMENT usage
+                context.scaling_renderer.clip_rect(),
+            );
+
+            Ok(())
+        });
+
+        if let Err(err) = render_result {
+            dbg!("pixels.render_with failed: {}", err);
+        }
     }
 
     pub fn resize(&mut self, width: u32, height: u32) {

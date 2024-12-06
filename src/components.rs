@@ -5,7 +5,6 @@ use crate::input::Input;
 use crate::movement_util::{Axis, Direction};
 
 use crate::vec2::Vec2;
-use crate::TILE_SIZE;
 
 #[derive(Debug, Default)]
 pub struct AnimatedSprite {
