@@ -7,8 +7,7 @@ use crate::{
     components::{AnimatedSprite, Movement, Position, SpriteType},
     input::Input,
     movement_util::Direction,
-    resource::Resources,
-    spritesheet::CharacterSpritesheet,
+    resource::{CharacterSpritesheet, Resources},
 };
 
 use super::System;
@@ -42,7 +41,6 @@ impl System for SpriteRenderSystem {
     }
 }
 
-#[allow(clippy::too_many_arguments)]
 fn draw_sprite(
     sprite: &AnimatedSprite,
     position: &Position,

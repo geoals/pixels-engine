@@ -17,7 +17,8 @@ impl System for TileRenderSystem {
     ) {
         let camera = &resources.camera;
         let tilemap = &resources.tilemap;
-        let current_level = tilemap.get_level(&resources.current_level_id);
+        let tilesize = tilemap.tilesize();
+        let current_level = tilemap.current_level();
 
         let frame = pixels.frame_mut();
 
@@ -25,10 +26,10 @@ impl System for TileRenderSystem {
         let camera_top = camera.position().y - (SCREEN_HEIGHT as f32 / 2.0);
 
         // Calculate visible tile range based on camera's top-left position
-        let start_tile_x = (camera_left / tilemap.tilesize as f32).floor() as i64;
-        let start_tile_y = (camera_top / tilemap.tilesize as f32).floor() as i64;
-        let columns = (SCREEN_WIDTH / tilemap.tilesize as u32) as i64 + 1;
-        let rows = (SCREEN_HEIGHT / tilemap.tilesize as u32) as i64 + 1;
+        let start_tile_x = (camera_left / tilesize as f32).floor() as i64;
+        let start_tile_y = (camera_top / tilesize as f32).floor() as i64;
+        let columns = (SCREEN_WIDTH / tilesize as u32) as i64 + 1;
+        let rows = (SCREEN_HEIGHT / tilesize as u32) as i64 + 1;
 
         // Iterate through visible tiles
         for y in start_tile_y..(start_tile_y + rows) {
@@ -49,7 +50,7 @@ impl System for TileRenderSystem {
                     &current_level.tileset_pixels,
                     current_level.tileset_width,
                     tile,
-                    tilemap.tilesize,
+                    tilesize,
                     screen_x,
                     screen_y,
                 );

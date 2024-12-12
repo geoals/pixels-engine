@@ -10,8 +10,8 @@
 	},
 	"iid": "beb4bf10-9b00-11ef-b3a2-836b9f6d7bef",
 	"jsonVersion": "1.5.3",
-	"appBuildId": 481209,
-	"nextUid": 33,
+	"appBuildId": 473703,
+	"nextUid": 37,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -406,6 +406,41 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "Npc1",
+			"uid": 34,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 16,
+			"height": 16,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 0.08,
+			"lineOpacity": 0,
+			"hollow": false,
+			"color": "#EAD4AA",
+			"renderMode": "Tile",
+			"showName": true,
+			"tilesetId": 33,
+			"tileRenderMode": "FitInside",
+			"tileRect": { "tilesetUid": 33, "x": 17, "y": 17, "w": 16, "h": 16 },
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": []
 		}
 	], "tilesets": [
 		{
@@ -536,6 +571,28 @@
 			"customData": [{ "tileId": 0, "data": "animationFrames:0,1,2,3,4,5,6,7,8,9,10\nframeTime:80" }],
 			"savedSelections": [],
 			"cachedPixelData": { "opaqueTiles": "00000000000", "averageColors": "0d621da33d934d935d936d836c525a33382326240624" }
+		},
+		{
+			"__cWid": 13,
+			"__cHei": 6,
+			"identifier": "Characters",
+			"uid": 33,
+			"relPath": "char.png",
+			"embedAtlas": null,
+			"pxWid": 216,
+			"pxHei": 98,
+			"tileGridSize": 16,
+			"spacing": 1,
+			"padding": 0,
+			"tags": [],
+			"tagsSourceEnumUid": null,
+			"enumTags": [],
+			"customData": [],
+			"savedSelections": [],
+			"cachedPixelData": {
+				"opaqueTiles": "000000000000100000000000010000000000001000000000000100000000000011111111111111",
+				"averageColors": "9a52aa529a529942a94299428a428a428a428a42000000000000a942ba42a942a620a721a6209932983299329832000000000000aa53bb53aa53a842b842a8429953995299539952000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+			}
 		}
 	], "enums": [{ "identifier": "Direction", "uid": 30, "values": [
 		{ "id": "Left", "tileRect": null, "color": 12470831 },
@@ -933,6 +990,22 @@
 							"fieldInstances": [],
 							"__worldX": 272,
 							"__worldY": 144
+						},
+						{
+							"__identifier": "Npc1",
+							"__grid": [69,15],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": { "tilesetUid": 33, "x": 17, "y": 17, "w": 16, "h": 16 },
+							"__smartColor": "#EAD4AA",
+							"iid": "6e8e4b10-9b00-11ef-837c-817e9a326a3a",
+							"width": 16,
+							"height": 16,
+							"defUid": 34,
+							"px": [1104,240],
+							"fieldInstances": [],
+							"__worldX": 240,
+							"__worldY": 176
 						}
 					]
 				},

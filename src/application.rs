@@ -1,43 +1,32 @@
 use pixels_engine::components::FireSpell;
 use pixels_engine::components::Light;
 use pixels_engine::components::Player;
-use pixels_engine::resource::LightMap;
-use pixels_engine::spritesheet::EffectsSpritesheet;
 use pixels_engine::systems::cast_spell::CastSpellSystem;
 use pixels_engine::systems::light_control::LightControlSystem;
 use pixels_engine::systems::light_render::LightRenderSystem;
 use pixels_engine::systems::light_render::LightUpdateSystem;
+use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::spell_effect::SpellEffectRenderSystem;
-use pixels_engine::vec2::Vec2;
+use pixels_engine::tile::TileMap;
 use pixels_engine::SCALE_FACTOR;
 
 use hecs::World;
 use pixels::Pixels;
 use pixels::SurfaceTexture;
-use pixels_engine::camera::Camera;
 use pixels_engine::components::AnimatedSprite;
 use pixels_engine::components::Movement;
 use pixels_engine::components::Position;
 use pixels_engine::components::SpriteType;
 use pixels_engine::input::Input;
 use pixels_engine::resource::Resources;
-use pixels_engine::spritesheet::CharacterSpritesheet;
-use pixels_engine::spritesheet::Spritesheet;
 use pixels_engine::systems::camera::CameraFollowSystem;
 use pixels_engine::systems::character_animation::CharacterAnimationSystem;
 use pixels_engine::systems::debug_grid::DebugGridSystem;
 use pixels_engine::systems::level_transition::LevelTransitionSystem;
-use pixels_engine::systems::level_transition::ScreenTransition;
-use pixels_engine::systems::movement::MovementSystem;
 use pixels_engine::systems::sprite_render::SpriteRenderSystem;
 use pixels_engine::systems::tile_animation::TileAnimationSystem;
 use pixels_engine::systems::tile_render::TileRenderSystem;
 use pixels_engine::systems::SystemContainer;
-use pixels_engine::tile::CurrentLevelId;
-use pixels_engine::tile::TileMap;
-use pixels_engine::SCREEN_HEIGHT;
-use pixels_engine::SCREEN_WIDTH;
-use pixels_engine::TILE_SIZE;
 use std::time::Duration;
 use winit::window::Window;
 
@@ -55,13 +44,6 @@ impl Application {
         let tilemap = TileMap::load("./assets/world.ldtk").unwrap();
         let player_pos = tilemap.player_starting_position;
 
-        let camera = Camera::new(
-            player_pos + Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0),
-            SCREEN_WIDTH,
-            SCREEN_HEIGHT,
-        );
-
-        // Player entity
         let mut world = hecs::World::new();
         world.spawn((
             AnimatedSprite::new(SpriteType::Player),
@@ -78,19 +60,7 @@ impl Application {
             pixels: Self::set_up_pixels_frame_buffer(window),
             delta_time: Duration::ZERO,
             world,
-            resources: Resources {
-                camera,
-                character_spritesheet: CharacterSpritesheet(
-                    Spritesheet::new("./assets/characters_spritesheet.png", 16, 16).unwrap(),
-                ),
-                effects_spritesheet: EffectsSpritesheet(
-                    Spritesheet::new("./assets/effects.png", 16, 16).unwrap(),
-                ),
-                current_level_id: CurrentLevelId(tilemap.initial_level_id()),
-                tilemap,
-                screen_transition: Default::default(),
-                light_map: Default::default(),
-            },
+            resources: Resources::new(tilemap, player_pos),
         }
     }
 

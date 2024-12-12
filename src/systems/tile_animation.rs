@@ -15,8 +15,7 @@ impl System for TileAnimationSystem {
         _: &Input,
         delta_time: Duration,
     ) {
-        let current_level =
-            resources.tilemap.levels.get_mut(&resources.current_level_id.0).unwrap();
+        let current_level = resources.tilemap.current_level_mut();
 
         for tile_data in current_level.tiles.values_mut() {
             if let Some(animation) = &mut tile_data.animation {

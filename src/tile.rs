@@ -2,13 +2,14 @@ use crate::{ivec2::IVec2, movement_util::Direction, vec2::Vec2, TILE_SIZE};
 use ldtk2::Ldtk;
 use std::{collections::HashMap, time::Duration};
 
-pub struct CurrentLevelId(pub String);
+type LevelId = String;
+type EntityId = String;
 
 #[derive(Debug)]
 pub struct TileMap {
-    pub levels: HashMap<String, Level>,
-    initial_level_id: String,
-    pub tilesize: i64,
+    levels: HashMap<LevelId, Level>,
+    current_level_id: LevelId,
+    tilesize: i64,
     pub player_starting_position: Vec2,
     pub entities: HashMap<EntityId, EntityInstance>,
 }
@@ -18,12 +19,8 @@ pub struct Level {
     pub tiles: HashMap<(i64, i64), TileData>,
     pub tileset_pixels: Vec<u8>,
     pub tileset_width: u32,
-    pub tileset_height: u32,
-    pub level_id: String,
     pub indoors: bool,
 }
-
-type EntityId = String;
 
 #[derive(Debug)]
 pub struct EntityInstance {
@@ -43,16 +40,15 @@ pub struct TileData {
 
 #[derive(Debug, Clone)]
 pub struct Transition {
-    pub entity_id: EntityId,
     pub destination: EntityId,
 }
 
 #[derive(Debug, Clone)]
 pub struct TileAnimation {
-    pub frames: Vec<IVec2>,         // Positions of each frame in the tileset
-    pub frame_duration: Duration,   // How long each frame should display
-    pub current_frame: usize,       // Current frame index
-    pub accumulated_time: Duration, // Time accumulated since last frame change
+    frames: Vec<IVec2>,         // Positions of each frame in the tileset
+    frame_duration: Duration,   // How long each frame should display
+    current_frame: usize,       // Current frame index
+    accumulated_time: Duration, // Time accumulated since last frame change
 }
 
 impl TileAnimation {
@@ -112,9 +108,9 @@ impl TileMap {
 
         Ok(TileMap {
             levels,
-            initial_level_id: player_start.1,
             tilesize,
             player_starting_position: player_start.0,
+            current_level_id: player_start.1,
             entities,
         })
     }
@@ -180,7 +176,6 @@ impl TileMap {
                         entrance_transitions.insert(
                             grid_pos,
                             Transition {
-                                entity_id: entity.iid.clone(),
                                 destination: destination_entity_id,
                             },
                         );
@@ -237,8 +232,6 @@ impl TileMap {
             tiles,
             tileset_pixels: tileset_rgba.to_vec(),
             tileset_width: tileset_img.width(),
-            tileset_height: tileset_img.height(),
-            level_id: level_data.iid.clone(),
             indoors: level_data.field_instances.iter().any(|field| {
                 field.identifier == "indoors" && field.value.as_ref().unwrap() == true
             }),
@@ -273,12 +266,24 @@ impl TileMap {
         Ok(entities)
     }
 
-    pub fn get_level(&self, id: &CurrentLevelId) -> &Level {
-        self.levels.get(&id.0).unwrap()
+    pub fn get_level(&self, id: &LevelId) -> &Level {
+        self.levels.get(id).unwrap()
     }
 
-    pub fn initial_level_id(&self) -> String {
-        self.initial_level_id.clone()
+    pub fn current_level(&self) -> &Level {
+        self.levels.get(&self.current_level_id).unwrap()
+    }
+
+    pub fn current_level_mut(&mut self) -> &mut Level {
+        self.levels.get_mut(&self.current_level_id).unwrap()
+    }
+
+    pub fn change_level(&mut self, destination_level_id: &str) {
+        self.current_level_id = destination_level_id.to_string();
+    }
+
+    pub fn tilesize(&self) -> i64 {
+        self.tilesize
     }
 }
 

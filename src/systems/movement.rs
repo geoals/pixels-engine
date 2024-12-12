@@ -7,7 +7,7 @@ use crate::{
     input::Input,
     movement_util::{Direction, PositionExt},
     resource::Resources,
-    tile::{CurrentLevelId, TileMap},
+    tile::TileMap,
     vec2::Vec2,
     TILE_SIZE,
 };
@@ -25,7 +25,6 @@ struct MovementContext<'a> {
     tilemap: &'a TileMap,
     delta_time: Duration,
     input: &'a Input,
-    current_level_id: &'a CurrentLevelId,
 }
 
 impl System for MovementSystem {
@@ -44,7 +43,6 @@ impl System for MovementSystem {
                 tilemap: &resources.tilemap,
                 delta_time,
                 input,
-                current_level_id: &resources.current_level_id,
             };
             handle_movement(&mut ctx);
         }
@@ -134,8 +132,7 @@ fn is_traversable(ctx: &MovementContext) -> bool {
     };
     let collision_tile = collision_pos.tile_coordinate();
 
-    ctx.tilemap.get_level(ctx.current_level_id).tiles[&(collision_tile.0, collision_tile.1)]
-        .traversable
+    ctx.tilemap.current_level().tiles[&(collision_tile.0, collision_tile.1)].traversable
 }
 
 fn next_position(ctx: &MovementContext) -> Vec2 {

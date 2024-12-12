@@ -22,7 +22,7 @@ impl System for LightRenderSystem {
         _: &Input,
         _: Duration,
     ) {
-        let indoors = resources.tilemap.levels[&resources.current_level_id.0].indoors;
+        let indoors = resources.tilemap.current_level().indoors;
         if indoors {
             return;
         }
@@ -88,8 +88,7 @@ impl System for LightUpdateSystem {
         _: &Input,
         _: Duration,
     ) {
-        let indoors = resources.tilemap.levels[&resources.current_level_id.0].indoors;
-        if indoors {
+        if resources.tilemap.current_level().indoors {
             return;
         }
 

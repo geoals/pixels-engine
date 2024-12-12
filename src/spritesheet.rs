@@ -4,33 +4,47 @@ use image::{DynamicImage, GenericImageView};
 
 use crate::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
-pub struct CharacterSpritesheet(pub Spritesheet);
-pub struct EffectsSpritesheet(pub Spritesheet);
-
 pub struct Spritesheet {
     image: DynamicImage,
     sprite_width: u32,
     sprite_height: u32,
+    padding: u32,
     sprite_cache: HashMap<(u32, u32), Vec<u8>>,
+}
+
+pub struct SpritesheetConfig {
+    pub sprite_width: u32,
+    pub sprite_height: u32,
+    pub padding: u32,
+}
+
+impl Default for SpritesheetConfig {
+    fn default() -> Self {
+        Self {
+            sprite_width: 16,
+            sprite_height: 16,
+            padding: 0,
+        }
+    }
 }
 
 impl Spritesheet {
     pub fn new<P: AsRef<Path>>(
         path: P,
-        sprite_width: u32,
-        sprite_height: u32,
+        config: SpritesheetConfig,
     ) -> Result<Self, image::ImageError> {
         let image = image::open(path)?;
         Ok(Self {
             image,
-            sprite_width,
-            sprite_height,
+            sprite_width: config.sprite_width,
+            sprite_height: config.sprite_height,
+            padding: config.padding,
             sprite_cache: HashMap::new(),
         })
     }
 
-    /// Gets the pixel data for a sprite at the given position in the spritesheet
-    fn get_sprite(&mut self, sprite_x: u32, sprite_y: u32) -> Option<&Vec<u8>> {
+    /// Gets the pixel data for a sprite at the given pixel coordinate in the spritesheet
+    fn get_sprite_at_px(&mut self, sprite_x: u32, sprite_y: u32) -> Option<&Vec<u8>> {
         // Check if the sprite is within bounds
         if sprite_x + self.sprite_width > self.image.width()
             || sprite_y + self.sprite_height > self.image.height()
@@ -57,14 +71,21 @@ impl Spritesheet {
         self.sprite_cache.get(&(sprite_x, sprite_y))
     }
 
+    /// Get sprite using grid coordinates
+    fn get_sprite(&mut self, row_index: u32, col_index: u32) -> Option<&Vec<u8>> {
+        let sprite_x = (row_index * self.sprite_height) + (row_index * self.padding);
+        let sprite_y = (col_index * self.sprite_width) + (col_index * self.padding);
+        self.get_sprite_at_px(sprite_x, sprite_y)
+    }
+
     /// Draw a sprite directly to a pixel buffer at the specified position
     ///
     /// # Arguments
-    /// * `sprite_x` - The x position of the sprite in the spritesheet
-    /// * `sprite_y` - The y position of the sprite in the spritesheet
+    /// * `sprite_x` - The x index of the sprite in the spritesheet
+    /// * `sprite_y` - The y index of the sprite in the spritesheet
     /// * `target` - The pixel buffer to draw the sprite to
-    /// * `dest_x` - The x position in the buffer to draw the sprite to
-    /// * `dest_y` - The y position in the buffer to draw the sprite to
+    /// * `dest_x` - The x pixel position in the buffer to draw the sprite to
+    /// * `dest_y` - The y pixel position in the buffer to draw the sprite to
     pub fn draw_sprite_to_buffer(
         &mut self,
         sprite_x: u32,

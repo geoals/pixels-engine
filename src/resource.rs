@@ -1,20 +1,63 @@
 use crate::{
     camera::Camera,
-    spritesheet::{CharacterSpritesheet, EffectsSpritesheet},
+    spritesheet::{Spritesheet, SpritesheetConfig},
     systems::level_transition::ScreenTransition,
-    tile::{CurrentLevelId, TileMap},
-    SCREEN_HEIGHT, SCREEN_WIDTH,
+    tile::TileMap,
+    vec2::Vec2,
+    SCREEN_HEIGHT, SCREEN_WIDTH, TILE_SIZE,
 };
 
 pub struct Resources {
     pub camera: Camera,
     pub character_spritesheet: CharacterSpritesheet,
     pub effects_spritesheet: EffectsSpritesheet,
-    // TODO : move this back into tilemap struct
-    pub current_level_id: CurrentLevelId,
     pub tilemap: TileMap,
     pub screen_transition: ScreenTransition,
     pub light_map: LightMap,
+}
+
+impl Resources {
+    pub fn new(tilemap: TileMap, player_pos: Vec2) -> Self {
+        let camera = Camera::new(
+            player_pos + Vec2::new(TILE_SIZE as f32 / 2.0, TILE_SIZE as f32 / 2.0),
+            SCREEN_WIDTH,
+            SCREEN_HEIGHT,
+        );
+
+        Self {
+            camera,
+            tilemap,
+            character_spritesheet: Default::default(),
+            effects_spritesheet: Default::default(),
+            screen_transition: Default::default(),
+            light_map: Default::default(),
+        }
+    }
+}
+
+pub struct CharacterSpritesheet(pub Spritesheet);
+
+impl Default for CharacterSpritesheet {
+    fn default() -> Self {
+        CharacterSpritesheet(
+            Spritesheet::new(
+                "./assets/char.png",
+                SpritesheetConfig {
+                    padding: 1,
+                    ..Default::default()
+                },
+            )
+            .unwrap(),
+        )
+    }
+}
+
+pub struct EffectsSpritesheet(pub Spritesheet);
+
+impl Default for EffectsSpritesheet {
+    fn default() -> Self {
+        EffectsSpritesheet(Spritesheet::new("./assets/effects.png", Default::default()).unwrap())
+    }
 }
 
 pub struct LightMap {
